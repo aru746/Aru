@@ -1,159 +1,150 @@
-const Bank = require("../../models/bankSchema");
+const mongoose = require("mongoose");
+
+// ====== Bank Schema ======
+const bankSchema = new mongoose.Schema({
+  userID: { type: String, required: true, unique: true },
+  balance: { type: Number, default: 0 },
+  loan: { type: Number, default: 0 },
+  interest: { type: Number, default: 0 }
+});
+
+const Bank = mongoose.models.Bank || mongoose.model("Bank", bankSchema);
 
 module.exports = {
   config: {
     name: "bank",
-    aliases: ["alya-bank"],
     version: "3.0",
     author: "Arijit",
     countDown: 5,
     role: 0,
-    shortDescription: "Alya Bank system",
-    longDescription: "Deposit, withdraw, transfer, loan, and manage your Alya Bank balance",
+    shortDescription: "Bank system",
+    longDescription: "Check balance, deposit, withdraw, interest, transfer, loan, payloan, and top richest users.",
     category: "economy",
-    guide: {
-      en: "{pn} [balance|deposit|withdraw|transfer|top|loan|payloan] [amount|uid]"
-    }
+    guide: "{pn} [balance|deposit|withdraw|interest|transfer|loan|payloan|top]"
   },
 
-  onStart: async function ({ args, message, event, usersData }) {
-    const command = args[0]?.toLowerCase();
-    const amount = parseInt(args[1]);
-    const userID = event.senderID;
+  onStart: async function ({ message, event, usersData, args }) {
+    const senderID = event.senderID;
+    const senderName = await usersData.getName(senderID);
 
-    // Fetch or create user bank data
-    let userBankData = await Bank.findOne({ userID });
-    if (!userBankData) {
-      userBankData = await Bank.create({ userID });
+    // Ensure user account exists
+    let userAcc = await Bank.findOne({ userID: senderID });
+    if (!userAcc) {
+      userAcc = new Bank({ userID: senderID });
+      await userAcc.save();
     }
 
-    // Show menu if no command
-    if (!command) {
+    const action = args[0]?.toLowerCase();
+
+    // Menu
+    if (!action) {
       return message.reply(
-        `╭─[🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊 🏦]\n` +
-        `│❀ 𝐁𝐚𝐥𝐚𝐧𝐜𝐞\n` +
-        `│❀ 𝐃𝐞𝐩𝐨𝐬𝐢𝐭\n` +
-        `│❀ 𝐖𝐢𝐭𝐡𝐝𝐫𝐚𝐰\n` +
-        `│❀ 𝐈𝐧𝐭𝐞𝐫𝐞𝐬𝐭\n` +
-        `│❀ 𝐓𝐫𝐚𝐧𝐬𝐟𝐞𝐫\n` +
-        `│❀ 𝐓𝐨𝐩\n` +
-        `│❀ 𝐋𝐨𝐚𝐧\n` +
-        `│❀ 𝐏𝐚𝐲𝐋𝐨𝐚𝐧\n` +
-        `╰────────────⭓`
+`╭─[🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊 🏦]
+│❀ 𝐁𝐚𝐥𝐚𝐧𝐜𝐞
+│❀ 𝐃𝐞𝐩𝐨𝐬𝐢𝐭
+│❀ 𝐖𝐢𝐭𝐡𝐝𝐫𝐚𝐰
+│❀ 𝐈𝐧𝐭𝐞𝐫𝐞𝐬𝐭
+│❀ 𝐓𝐫𝐚𝐧𝐬𝐟𝐞𝐫
+│❀ 𝐓𝐨𝐩
+│❀ 𝐋𝐨𝐚𝐧
+│❀ 𝐏𝐚𝐲𝐋𝐨𝐚𝐧
+╰────────────⭓`
       );
     }
 
     // BALANCE
-    if (command === "balance") {
-      const name = await usersData.getName(userID);
+    if (action === "balance") {
       return message.reply(
-        `🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊\n\n` +
-        `👤 𝐔𝐬𝐞𝐫: **${name}**\n` +
-        `💰 𝐁𝐚𝐧𝐤 𝐁𝐚𝐥𝐚𝐧𝐜𝐞: **$${userBankData.balance.toLocaleString()}**`
+`╭─[🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊 🏦]
+│
+│‣ 𝐔𝐬𝐞𝐫: **${senderName}**
+│‣ 𝐁𝐚𝐧𝐤 𝐁𝐚𝐥𝐚𝐧𝐜𝐞: **${userAcc.balance}**💰
+│‣ 𝐋𝐨𝐚𝐧: **${userAcc.loan}**💵
+╰────────────⭓`
       );
     }
 
     // DEPOSIT
-    if (command === "deposit") {
-      if (isNaN(amount) || amount <= 0) return message.reply("❌ Please enter a valid amount.");
-      if (userBankData.cash < amount) return message.reply("❌ You don’t have enough cash.");
-
-      userBankData.cash -= amount;
-      userBankData.balance += amount;
-      await userBankData.save();
-
-      return message.reply(
-        `✅ Successfully deposited **$${amount.toLocaleString()}**\n` +
-        `🏦 New Bank Balance: **$${userBankData.balance.toLocaleString()}**`
-      );
+    if (action === "deposit") {
+      const amount = parseInt(args[1]);
+      if (!amount || amount <= 0) return message.reply("❌ | Enter a valid amount.");
+      userAcc.balance += amount;
+      await userAcc.save();
+      return message.reply(`✅ | 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐝𝐞𝐩𝐨𝐬𝐢𝐭𝐞𝐝 **${amount}**💰`);
     }
 
     // WITHDRAW
-    if (command === "withdraw") {
-      if (isNaN(amount) || amount <= 0) return message.reply("❌ Please enter a valid amount.");
-      if (userBankData.balance < amount) return message.reply("❌ You don’t have enough in bank.");
+    if (action === "withdraw") {
+      const amount = parseInt(args[1]);
+      if (!amount || amount <= 0) return message.reply("❌ | Enter a valid amount.");
+      if (userAcc.balance < amount) return message.reply("❌ | Not enough balance.");
+      userAcc.balance -= amount;
+      await userAcc.save();
+      return message.reply(`✅ | 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐰𝐢𝐭𝐡𝐝𝐫𝐚𝐰𝐧 **${amount}**💰`);
+    }
 
-      userBankData.balance -= amount;
-      userBankData.cash += amount;
-      await userBankData.save();
-
-      return message.reply(
-        `✅ Successfully withdrew **$${amount.toLocaleString()}**\n` +
-        `🏦 Remaining Bank Balance: **$${userBankData.balance.toLocaleString()}**`
-      );
+    // INTEREST
+    if (action === "interest") {
+      const gain = Math.floor(userAcc.balance * 0.05);
+      userAcc.balance += gain;
+      await userAcc.save();
+      return message.reply(`💹 | 𝐘𝐨𝐮 𝐠𝐨𝐭 𝐢𝐧𝐭𝐞𝐫𝐞𝐬𝐭: **${gain}**💰`);
     }
 
     // TRANSFER
-    if (command === "transfer") {
-      const targetID = args[2];
-      if (!targetID) return message.reply("❌ Please enter a target UID.");
-      if (isNaN(amount) || amount <= 0) return message.reply("❌ Invalid amount.");
-      if (userBankData.balance < amount) return message.reply("❌ Insufficient balance.");
-
-      let targetData = await Bank.findOne({ userID: targetID });
-      if (!targetData) targetData = await Bank.create({ userID: targetID });
-
-      userBankData.balance -= amount;
-      targetData.balance += amount;
-      await userBankData.save();
-      await targetData.save();
-
-      const senderName = await usersData.getName(userID);
-      const receiverName = await usersData.getName(targetID);
-
-      return message.reply(
-        `💸 Transfer Successful!\n\n` +
-        `👤 From: **${senderName}**\n` +
-        `👤 To: **${receiverName}**\n` +
-        `💰 Amount: **$${amount.toLocaleString()}**`
-      );
-    }
-
-    // TOP LIST
-    if (command === "top") {
-      const topUsers = await Bank.find().sort({ balance: -1 }).limit(15);
-      let msg = `[🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊 🏦]\n👑 𝐓𝐨𝐩 𝟏𝟓 𝐑𝐢𝐜𝐡𝐞𝐬𝐭 𝐔𝐬𝐞𝐫𝐬 👑\n━━━━━━━━━━━\n`;
-
-      for (let i = 0; i < topUsers.length; i++) {
-        const name = await usersData.getName(topUsers[i].userID);
-        msg += `#${i + 1} • **${name}** → **$${topUsers[i].balance.toLocaleString()}**\n`;
+    if (action === "transfer") {
+      const targetID = Object.keys(event.mentions)[0];
+      const amount = parseInt(args[2]);
+      if (!targetID) return message.reply("❌ | Mention someone to transfer.");
+      if (!amount || amount <= 0) return message.reply("❌ | Invalid amount.");
+      if (userAcc.balance < amount) return message.reply("❌ | Not enough balance.");
+      let targetAcc = await Bank.findOne({ userID: targetID });
+      if (!targetAcc) {
+        targetAcc = new Bank({ userID: targetID });
+        await targetAcc.save();
       }
-
-      return message.reply(msg);
+      userAcc.balance -= amount;
+      targetAcc.balance += amount;
+      await userAcc.save();
+      await targetAcc.save();
+      const targetName = await usersData.getName(targetID);
+      return message.reply(`✅ | 𝐓𝐫𝐚𝐧𝐬𝐟𝐞𝐫𝐫𝐞𝐝 **${amount}**💰 𝐭𝐨 **${targetName}**`);
     }
 
     // LOAN
-    if (command === "loan") {
-      if (isNaN(amount) || amount <= 0) return message.reply("❌ Invalid loan amount.");
-      userBankData.loan += amount;
-      userBankData.balance += amount;
-      await userBankData.save();
-
-      return message.reply(
-        `✅ Loan Approved!\n` +
-        `💰 Loan Taken: **$${amount.toLocaleString()}**\n` +
-        `🏦 Bank Balance: **$${userBankData.balance.toLocaleString()}**`
-      );
+    if (action === "loan") {
+      const amount = parseInt(args[1]);
+      if (!amount || amount <= 0) return message.reply("❌ | Enter valid amount.");
+      userAcc.loan += amount;
+      userAcc.balance += amount;
+      await userAcc.save();
+      return message.reply(`💵 | 𝐘𝐨𝐮 𝐭𝐨𝐨𝐤 𝐚 𝐥𝐨𝐚𝐧 𝐨𝐟 **${amount}**💰`);
     }
 
     // PAYLOAN
-    if (command === "payloan") {
-      if (isNaN(amount) || amount <= 0) return message.reply("❌ Invalid amount.");
-      if (userBankData.balance < amount) return message.reply("❌ Not enough in bank.");
-      if (userBankData.loan <= 0) return message.reply("❌ You don’t have any loan.");
-
-      userBankData.balance -= amount;
-      userBankData.loan -= amount;
-      if (userBankData.loan < 0) userBankData.loan = 0;
-      await userBankData.save();
-
-      return message.reply(
-        `✅ Loan Payment Successful!\n` +
-        `💸 Paid: **$${amount.toLocaleString()}**\n` +
-        `Remaining Loan: **$${userBankData.loan.toLocaleString()}**`
-      );
+    if (action === "payloan") {
+      const amount = parseInt(args[1]);
+      if (!amount || amount <= 0) return message.reply("❌ | Enter valid amount.");
+      if (userAcc.balance < amount) return message.reply("❌ | Not enough balance.");
+      if (userAcc.loan < amount) return message.reply("❌ | You don't owe that much.");
+      userAcc.loan -= amount;
+      userAcc.balance -= amount;
+      await userAcc.save();
+      return message.reply(`✅ | 𝐘𝐨𝐮 𝐩𝐚𝐢𝐝 𝐥𝐨𝐚𝐧: **${amount}**💰`);
     }
 
-    return message.reply("❌ Invalid command. Type **bank** to see available options.");
+    // TOP
+    if (action === "top") {
+      const topUsers = await Bank.find().sort({ balance: -1 }).limit(15);
+      let text = "🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊 🏦\n\n👑 𝐓𝐨𝐩 𝟏𝟓 𝐑𝐢𝐜𝐡𝐞𝐬𝐭 𝐔𝐬𝐞𝐫𝐬 👑\n━━━━━━━━━━━\n";
+      let rank = 1;
+      for (const acc of topUsers) {
+        const name = await usersData.getName(acc.userID) || "Unknown";
+        text += `#${rank} • **${name}**\n   Balance: **${acc.balance}**💰\n`;
+        rank++;
+      }
+      return message.reply(text);
+    }
+
   }
 };
