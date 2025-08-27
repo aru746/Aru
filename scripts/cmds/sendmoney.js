@@ -3,8 +3,8 @@ const fs = require("fs-extra");
 module.exports = {
   config: {
     name: "sendmoney",
-    aliases: ["send", "s-m", "Send-m"],
-    version: "2.6.1",
+    aliases: ["send", "s-m", "send-m"],
+    version: "2.7.0",
     author: "Arijit",
     countDown: 5,
     role: 0,
@@ -76,17 +76,27 @@ module.exports = {
         "A":"𝐀","B":"𝐁","C":"𝐂","D":"𝐃","E":"𝐄","F":"𝐅","G":"𝐆","H":"𝐇","I":"𝐈","J":"𝐉",
         "K":"𝐊","L":"𝐋","M":"𝐌","N":"𝐍","O":"𝐎","P":"𝐏","Q":"𝐐","R":"𝐑","S":"𝐒","T":"𝐓",
         "U":"𝐔","V":"𝐕","W":"𝐖","X":"𝐗","Y":"𝐘","Z":"𝐙",
-        "0":"0","1":"1","2":"2","3":"3","4":"4","5":"5","6":"6","7":"7","8":"8","9":"9",
+        "0":"𝟎","1":"𝟏","2":"𝟐","3":"𝟑","4":"𝟒","5":"𝟓","6":"𝟔","7":"𝟕","8":"𝟖","9":"𝟗",
         " ":" ","'":"'",",":",",".":".","-":"-","!":"!","?":"?"
       };
       return text.split('').map(c => boldAlphabet[c] || c).join('');
     }
 
-    const styledAmount = toBoldUnicode(amount.toString());
+    // Money formatter (K, M, B, T, Q)
+    function formatMoney(num) {
+      if (num >= 1e15) return (num / 1e15).toFixed(2).replace(/\.00$/, '') + "Q";
+      if (num >= 1e12) return (num / 1e12).toFixed(2).replace(/\.00$/, '') + "T";
+      if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + "B";
+      if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, '') + "M";
+      if (num >= 1e3) return (num / 1e3).toFixed(2).replace(/\.00$/, '') + "K";
+      return num.toString();
+    }
+
+    const styledAmount = toBoldUnicode(`$${formatMoney(amount)}`);
     const styledName = toBoldUnicode(recipientName);
 
     return message.reply(
-      `✅ | 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐬𝐞𝐧𝐭 𝐦𝐨𝐧𝐞𝐲 ${styledAmount} 𝐭𝐨 ${styledName}.`,
+      `✅ | 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐬𝐞𝐧𝐭 ${styledAmount} 𝐭𝐨 ${styledName}.`,
       [],
       {
         mentions: [{
