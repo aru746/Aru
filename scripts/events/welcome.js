@@ -1,138 +1,136 @@
-const { getTime, drive } = global.utils;
-const axios = require("axios");
+const { drive } = global.utils;
+const moment = require("moment-timezone");
+
 if (!global.temp.welcomeEvent)
 	global.temp.welcomeEvent = {};
+
+// Unicode bold converter
+function toBoldUnicode(name) {
+	const boldAlphabet = {
+		"a": "𝐚", "b": "𝐛", "c": "𝐜", "d": "𝐝", "e": "𝐞", "f": "𝐟", "g": "𝐠", "h": "𝐡", "i": "𝐢", "j": "𝐣",
+		"k": "𝐤", "l": "𝐥", "m": "𝐦", "n": "𝐧", "o": "𝐨", "p": "𝐩", "q": "𝐪", "r": "𝐫", "s": "𝐬", "t": "𝐭",
+		"u": "𝐮", "v": "𝐯", "w": "𝐰", "x": "𝐱", "y": "𝐲", "z": "𝐳",
+		"A": "𝐀", "B": "𝐁", "C": "𝐂", "D": "𝐃", "E": "𝐄", "F": "𝐅", "G": "𝐆", "H": "𝐇", "I": "𝐈", "J": "𝐉",
+		"K": "𝐊", "L": "𝐋", "M": "𝐌", "N": "𝐍", "O": "𝐎", "P": "𝐏", "Q": "𝐐", "R": "𝐑", "S": "𝐒", "T": "𝐓",
+		"U": "𝐔", "V": "𝐕", "W": "𝐖", "X": "𝐗", "Y": "𝐘", "Z": "𝐙",
+		"0": "0", "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9",
+		" ": " ", "'": "'", ",": ",", ".": ".", "-": "-", "!": "!", "?": "?"
+	};
+	return name.split('').map(char => boldAlphabet[char] || char).join('');
+}
+
+// session detector (Morning, Noon, Afternoon, Evening, Night)
+function getSession(hour) {
+	if (hour >= 5 && hour < 12) return "Morning";
+	if (hour >= 12 && hour < 15) return "Noon";
+	if (hour >= 15 && hour < 18) return "Afternoon";
+	if (hour >= 18 && hour < 21) return "Evening";
+	return "Night";
+}
 
 module.exports = {
 	config: {
 		name: "welcome",
-		version: "1.7",
-		author: "NTKhang",
+		version: "3.2",
+		author: "Arijit",
 		category: "events"
 	},
 
 	langs: {
-		vi: {
-			session1: "sáng",
-			session2: "trưa",
-			session3: "chiều",
-			session4: "tối",
-			welcomeMessage: "Cảm ơn bạn đã mời tôi vào nhóm!\nPrefix bot: %1\nĐể xem danh sách lệnh hãy nhập: %1help",
-			multiple1: "bạn",
-			multiple2: "các bạn",
-			defaultWelcomeMessage: "Xin chào {userName}.\nChào mừng bạn đến với {boxName}.\nChúc bạn có buổi {session} vui vẻ!"
-		},
 		en: {
-			session1: "morning",
-			session2: "noon",
-			session3: "afternoon",
-			session4: "evening",
-			welcomeMessage: "Thank you for inviting me to the group!\nBot prefix: %1\nTo view the list of commands, please enter: %1help",
 			multiple1: "you",
-			multiple2: "you guys",
-			defaultWelcomeMessage: `Hello {userName}.\nWelcome {multiple} to the chat group: {boxName}\nHave a nice {session} 😊`
+			multiple2: "all of you",
+			defaultWelcomeMessage:
+`‎Welcome: [ {userName} ] 
+𝐓𝐨 𝐨𝐮𝐫 𝐠𝐫𝐨𝐮𝐩: [ {boxName} ]🎀  
+
+🎀 𝐇𝐚𝐯𝐞 𝐚 𝐧𝐢𝐜𝐞 {session} 😊  
+
+🔰 𝐈 𝐡𝐨𝐩𝐞 𝐲𝐨𝐮 𝐟𝐨𝐥𝐥𝐨𝐰 𝐨𝐮𝐫 𝐚𝐥𝐥 𝐠𝐫𝐨𝐮𝐩 𝐫𝐮𝐥𝐞𝐬 ♻  
+
+╭➢ 𝐎𝐰𝐧𝐞𝐫 : 𝐀 𝐑 𝐈 𝐉 𝐈 𝐓⚡  
+╰➢ 𝐅𝐁 : https://fb.com/arijit016
+
+╭➢ 🕒 {timeIND} (IN) 
+╰➢ 🕒 {timeBD} (BD)`
 		}
 	},
 
 	onStart: async ({ threadsData, message, event, api, getLang }) => {
 		if (event.logMessageType == "log:subscribe")
 			return async function () {
-				const hours = getTime("HH");
 				const { threadID } = event;
-				const { nickNameBot } = global.GoatBot.config;
-				const prefix = global.utils.getPrefix(threadID);
+				const { nickNameBot = "MyBot" } = global.GoatBot.config;
 				const dataAddedParticipants = event.logMessageData.addedParticipants;
+
 				// if new member is bot
 				if (dataAddedParticipants.some((item) => item.userFbId == api.getCurrentUserID())) {
 					if (nickNameBot)
 						api.changeNickname(nickNameBot, threadID, api.getCurrentUserID());
-					return message.send(getLang("welcomeMessage", prefix));
+					return message.send(
+						getLang("defaultWelcomeMessage").replace(/\{botName\}/g, nickNameBot)
+					);
 				}
-				// if new member:
-				if (!global.temp.welcomeEvent[threadID])
-					global.temp.welcomeEvent[threadID] = {
-						joinTimeout: null,
-						dataAddedParticipants: []
-					};
 
-				// push new member to array
+				// if new member
+				if (!global.temp.welcomeEvent[threadID])
+					global.temp.welcomeEvent[threadID] = { joinTimeout: null, dataAddedParticipants: [] };
+
 				global.temp.welcomeEvent[threadID].dataAddedParticipants.push(...dataAddedParticipants);
-				// if timeout is set, clear it
 				clearTimeout(global.temp.welcomeEvent[threadID].joinTimeout);
 
-				// set new timeout
 				global.temp.welcomeEvent[threadID].joinTimeout = setTimeout(async function () {
 					const threadData = await threadsData.get(threadID);
-					if (threadData.settings.sendWelcomeMessage == false)
-						return;
+					if (threadData.settings.sendWelcomeMessage == false) return;
+
 					const dataAddedParticipants = global.temp.welcomeEvent[threadID].dataAddedParticipants;
-					const dataBanned = threadData.data.banned_ban || [];
 					const threadName = threadData.threadName;
-					const userName = [],
-						mentions = [];
+					const userName = [], mentions = [];
 					let multiple = false;
 
-					if (dataAddedParticipants.length > 1)
-						multiple = true;
+					if (dataAddedParticipants.length > 1) multiple = true;
 
 					for (const user of dataAddedParticipants) {
-						if (dataBanned.some((item) => item.id == user.userFbId))
-							continue;
 						userName.push(user.fullName);
-						mentions.push({
-							tag: user.fullName,
-							id: user.userFbId
-						});
+						mentions.push({ tag: user.fullName, id: user.userFbId });
 					}
-					// {userName}:   name of new member
-					// {multiple}:
-					// {boxName}:    name of group
-					// {threadName}: name of group
-					// {session}:    session of day
+
 					if (userName.length == 0) return;
-					let { welcomeMessage = getLang("defaultWelcomeMessage") } =
-						threadData.data;
-					const form = {
-						mentions: welcomeMessage.match(/\{userNameTag\}/g) ? mentions : null
-					};
+
+					let { welcomeMessage = getLang("defaultWelcomeMessage") } = threadData.data;
+
+					// styled names
+					const styledUser = toBoldUnicode(userName.join(", "));
+					const styledThread = toBoldUnicode(threadName);
+
+					// time for IND & BD
+					const timeIND = moment.tz("Asia/Kolkata").format("hh:mm A");
+					const timeBD  = moment.tz("Asia/Dhaka").format("hh:mm A");
+
+					// session (based on IND time)
+					const hourIND = parseInt(moment.tz("Asia/Kolkata").format("HH"));
+					let sessionText = toBoldUnicode(getSession(hourIND));
+
+					// replace placeholders
 					welcomeMessage = welcomeMessage
-						.replace(/\{userName\}|\{userNameTag\}/g, userName.join(", "))
-						.replace(/\{boxName\}|\{threadName\}/g, threadName)
-						.replace(
-							/\{multiple\}/g,
-							multiple ? getLang("multiple2") : getLang("multiple1")
-						)
-						.replace(
-							/\{session\}/g,
-							hours <= 10
-								? getLang("session1")
-								: hours <= 12
-									? getLang("session2")
-									: hours <= 18
-										? getLang("session3")
-										: getLang("session4")
-						);
+						.replace(/\{userName\}/g, styledUser)
+						.replace(/\{boxName\}|\{threadName\}/g, styledThread)
+						.replace(/\{multiple\}/g, multiple ? getLang("multiple2") : getLang("multiple1"))
+						.replace(/\{session\}/g, sessionText)
+						.replace(/\{timeIND\}/g, toBoldUnicode(timeIND))
+						.replace(/\{timeBD\}/g, toBoldUnicode(timeBD));
 
-					// Fetch and append rules
-					try {
-						const res = await axios.get("https://raw.githubusercontent.com/alkama844/GB2/refs/heads/main/rules.txt");
-						welcomeMessage += `\n\nRules:\n${res.data}`;
-					} catch (e) {
-						welcomeMessage += "\n\n[!] Couldn't load rules.";
-					}
+					const form = { body: welcomeMessage, mentions };
 
-					form.body = welcomeMessage;
-
+					// Add attachments if set
 					if (threadData.data.welcomeAttachment) {
 						const files = threadData.data.welcomeAttachment;
-						const attachments = files.reduce((acc, file) => {
-							acc.push(drive.getFile(file, "stream"));
-							return acc;
-						}, []);
+						const attachments = files.map(file => drive.getFile(file, "stream"));
 						form.attachment = (await Promise.allSettled(attachments))
 							.filter(({ status }) => status == "fulfilled")
 							.map(({ value }) => value);
 					}
+
 					message.send(form);
 					delete global.temp.welcomeEvent[threadID];
 				}, 1500);
