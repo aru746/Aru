@@ -64,7 +64,7 @@ module.exports = {
 		let areaKey, dataWeather, areaName;
 
 		try {
-			const response = (await axios.get(`https://api.accuweather.com/locations/v1/cities/search.json?q=${encodeURIComponent(area)}&apikey=${apikey}&language=vi-vn`)).data;
+			const response = (await axios.get(`https://api.accuweather.com/locations/v1/cities/search.json?q=${encodeURIComponent(area)}&apikey=${apikey}&language=vi-en`)).data;
 			if (response.length == 0)
 				return message.reply(getLang("notFound", area));
 			const data = response[0];

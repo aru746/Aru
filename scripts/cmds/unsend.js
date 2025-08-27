@@ -1,13 +1,14 @@
 module.exports = {
 	config: {
 		name: "unsend",
+    aliases : ["u","r","uns"],
 		version: "1.2",
 		author: "NTKhang",
 		countDown: 5,
 		role: 0,
 		description: {
 			vi: "Gỡ tin nhắn của bot",
-			en: "Unsend bot's message"
+			en: "Uns bot's message"
 		},
 		category: "box chat",
 		guide: {
