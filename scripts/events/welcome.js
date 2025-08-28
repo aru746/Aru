@@ -1,139 +1,131 @@
-const { drive } = global.utils;
+const { createCanvas, loadImage } = require("canvas");
+const axios = require("axios");
 const moment = require("moment-timezone");
+const fs = require("fs-extra");
 
 if (!global.temp.welcomeEvent)
-	global.temp.welcomeEvent = {};
+    global.temp.welcomeEvent = {};
 
-// Unicode bold converter
 function toBoldUnicode(name) {
-	const boldAlphabet = {
-		"a": "𝐚", "b": "𝐛", "c": "𝐜", "d": "𝐝", "e": "𝐞", "f": "𝐟", "g": "𝐠", "h": "𝐡", "i": "𝐢", "j": "𝐣",
-		"k": "𝐤", "l": "𝐥", "m": "𝐦", "n": "𝐧", "o": "𝐨", "p": "𝐩", "q": "𝐪", "r": "𝐫", "s": "𝐬", "t": "𝐭",
-		"u": "𝐮", "v": "𝐯", "w": "𝐰", "x": "𝐱", "y": "𝐲", "z": "𝐳",
-		"A": "𝐀", "B": "𝐁", "C": "𝐂", "D": "𝐃", "E": "𝐄", "F": "𝐅", "G": "𝐆", "H": "𝐇", "I": "𝐈", "J": "𝐉",
-		"K": "𝐊", "L": "𝐋", "M": "𝐌", "N": "𝐍", "O": "𝐎", "P": "𝐏", "Q": "𝐐", "R": "𝐑", "S": "𝐒", "T": "𝐓",
-		"U": "𝐔", "V": "𝐕", "W": "𝐖", "X": "𝐗", "Y": "𝐘", "Z": "𝐙",
-		"0": "0", "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9",
-		" ": " ", "'": "'", ",": ",", ".": ".", "-": "-", "!": "!", "?": "?"
-	};
-	return name.split('').map(char => boldAlphabet[char] || char).join('');
-}
-
-// session detector (Morning, Noon, Afternoon, Evening, Night)
-function getSession(hour) {
-	if (hour >= 5 && hour < 12) return "Morning";
-	if (hour >= 12 && hour < 15) return "Noon";
-	if (hour >= 15 && hour < 18) return "Afternoon";
-	if (hour >= 18 && hour < 21) return "Evening";
-	return "Night";
+    const boldAlphabet = {
+        "a":"𝐚","b":"𝐛","c":"𝐜","d":"𝐝","e":"𝐞","f":"𝐟","g":"𝐠","h":"𝐡","i":"𝐢","j":"𝐣",
+        "k":"𝐤","l":"𝐥","m":"𝐦","n":"𝐧","o":"𝐨","p":"𝐩","q":"𝐪","r":"𝐫","s":"𝐬","t":"𝐭",
+        "u":"𝐮","v":"𝐯","w":"𝐰","x":"𝐱","y":"𝐲","z":"𝐳",
+        "A":"𝐀","B":"𝐁","C":"𝐂","D":"𝐃","E":"𝐄","F":"𝐅","G":"𝐆","H":"𝐇","I":"𝐈","J":"𝐉",
+        "K":"𝐊","L":"𝐋","M":"𝐌","N":"𝐍","O":"𝐎","P":"𝐏","Q":"𝐐","R":"𝐑","S":"𝐒","T":"𝐓",
+        "U":"𝐔","V":"𝐕","W":"𝐖","X":"𝐗","Y":"𝐘","Z":"𝐙"
+    };
+    return name.split("").map(c => boldAlphabet[c] || c).join("");
 }
 
 module.exports = {
-	config: {
-		name: "welcome",
-		version: "3.2",
-		author: "Arijit",
-		category: "events"
-	},
+    config: {
+        name: "welcome",
+        version: "4.6",
+        author: "Arijit (Fixed by ChatGPT)",
+        category: "events"
+    },
 
-	langs: {
-		en: {
-			multiple1: "you",
-			multiple2: "all of you",
-			defaultWelcomeMessage:
-`‎Welcome: [ {userName} ] 
-𝐓𝐨 𝐨𝐮𝐫 𝐠𝐫𝐨𝐮𝐩: [ {boxName} ]🎀  
+    onStart: async function ({ event, api, threadsData, message }) {
+        if (event.logMessageType !== "log:subscribe") return;
 
-🎀 𝐇𝐚𝐯𝐞 𝐚 𝐧𝐢𝐜𝐞 {session} 😊  
+        try {
+            const { threadID } = event;
+            const dataAddedParticipants = event.logMessageData.addedParticipants || [];
+            const threadData = await threadsData.get(threadID) || {};
+            const threadInfo = await api.getThreadInfo(threadID);
 
-🔰 𝐈 𝐡𝐨𝐩𝐞 𝐲𝐨𝐮 𝐟𝐨𝐥𝐥𝐨𝐰 𝐨𝐮𝐫 𝐚𝐥𝐥 𝐠𝐫𝐨𝐮𝐩 𝐫𝐮𝐥𝐞𝐬 ♻  
+            const threadName = threadData.threadName || threadInfo.threadName || "Group";
+            const totalMembers = threadInfo.participantIDs?.length || 0;
 
-╭➢ 𝐎𝐰𝐧𝐞𝐫 : 𝐀 𝐑 𝐈 𝐉 𝐈 𝐓⚡  
-╰➢ 𝐅𝐁 : https://fb.com/arijit016
+            // Male/female count
+            const male = threadInfo.userInfo.filter(u => u.gender === "MALE").length;
+            const female = threadInfo.userInfo.filter(u => u.gender === "FEMALE").length;
 
-╭➢ 🕒 {timeIND} (IN) 
-╰➢ 🕒 {timeBD} (BD)`
-		}
-	},
+            for (const user of dataAddedParticipants) {
+                const uid = user.userFbId;
+                const name = user.fullName || "New Member";
 
-	onStart: async ({ threadsData, message, event, api, getLang }) => {
-		if (event.logMessageType == "log:subscribe")
-			return async function () {
-				const { threadID } = event;
-				const { nickNameBot = "MyBot" } = global.GoatBot.config;
-				const dataAddedParticipants = event.logMessageData.addedParticipants;
+                // Avatar (fallback if fails)
+                let avatar;
+                try {
+                    const avatarURL = `https://graph.facebook.com/${uid}/picture?width=512&height=512&access_token=6628568379%7C7a7f6f3b95bd29d2a0e1a64c82f9d0d1`;
+                    avatar = await loadImage(avatarURL);
+                } catch {
+                    avatar = await loadImage(__dirname + "/cache/default_avatar.png"); // fallback image
+                }
 
-				// if new member is bot
-				if (dataAddedParticipants.some((item) => item.userFbId == api.getCurrentUserID())) {
-					if (nickNameBot)
-						api.changeNickname(nickNameBot, threadID, api.getCurrentUserID());
-					return message.send(
-						getLang("defaultWelcomeMessage").replace(/\{botName\}/g, nickNameBot)
-					);
-				}
+                // Background image
+                const bg = await loadImage(__dirname + "/cache/wlc.jpg");
+                const canvas = createCanvas(1200, 675);
+                const ctx = canvas.getContext("2d");
 
-				// if new member
-				if (!global.temp.welcomeEvent[threadID])
-					global.temp.welcomeEvent[threadID] = { joinTimeout: null, dataAddedParticipants: [] };
+                // Draw background
+                ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
 
-				global.temp.welcomeEvent[threadID].dataAddedParticipants.push(...dataAddedParticipants);
-				clearTimeout(global.temp.welcomeEvent[threadID].joinTimeout);
+                // Avatar circle
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(600, 250, 100, 0, Math.PI * 2, true);
+                ctx.closePath();
+                ctx.clip();
+                ctx.drawImage(avatar, 500, 150, 200, 200);
+                ctx.restore();
 
-				global.temp.welcomeEvent[threadID].joinTimeout = setTimeout(async function () {
-					const threadData = await threadsData.get(threadID);
-					if (threadData.settings.sendWelcomeMessage == false) return;
+                // Title
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "bold 70px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("WELCOME", 600, 90);
 
-					const dataAddedParticipants = global.temp.welcomeEvent[threadID].dataAddedParticipants;
-					const threadName = threadData.threadName;
-					const userName = [], mentions = [];
-					let multiple = false;
+                // Name
+                ctx.fillStyle = "#00FFAA";
+                ctx.font = "bold 55px Arial";
+                ctx.fillText(name, 600, 420);
 
-					if (dataAddedParticipants.length > 1) multiple = true;
+                // Member count
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "28px Arial";
+                ctx.fillText(`You are the ${totalMembers}th member!`, 600, 470);
 
-					for (const user of dataAddedParticipants) {
-						userName.push(user.fullName);
-						mentions.push({ tag: user.fullName, id: user.userFbId });
-					}
+                // Graph-style stats box
+                ctx.fillStyle = "rgba(0,0,0,0.6)";
+                ctx.fillRect(250, 500, 700, 120);
 
-					if (userName.length == 0) return;
+                ctx.fillStyle = "#A0CFFF";
+                ctx.font = "26px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(`${totalMembers} Members • ${male} Male • ${female} Female`, 600, 545);
 
-					let { welcomeMessage = getLang("defaultWelcomeMessage") } = threadData.data;
+                ctx.fillStyle = "#FFD700";
+                ctx.font = "24px Arial";
+                const createdDate = threadData.createdAt
+                    ? moment(threadData.createdAt).format("MMM DD, YYYY")
+                    : moment().format("MMM DD, YYYY");
+                ctx.fillText(`Group created: ${createdDate}`, 600, 575);
 
-					// styled names
-					const styledUser = toBoldUnicode(userName.join(", "));
-					const styledThread = toBoldUnicode(threadName);
+                // Time display
+                const timeIND = moment.tz("Asia/Kolkata").format("hh:mm A");
+                const timeBD  = moment.tz("Asia/Dhaka").format("hh:mm A");
+                ctx.fillStyle = "#00FFAA";
+                ctx.font = "24px Arial";
+                ctx.fillText(`🕒 India: ${timeIND} | Bangladesh: ${timeBD}`, 600, 605);
 
-					// time for IND & BD
-					const timeIND = moment.tz("Asia/Kolkata").format("hh:mm A");
-					const timeBD  = moment.tz("Asia/Dhaka").format("hh:mm A");
+                // Save & send
+                const path = __dirname + `/cache/welcome_${uid}.png`;
+                fs.writeFileSync(path, canvas.toBuffer("image/png"));
 
-					// session (based on IND time)
-					const hourIND = parseInt(moment.tz("Asia/Kolkata").format("HH"));
-					let sessionText = toBoldUnicode(getSession(hourIND));
+                await message.send({
+                    body: `🎀 Welcome ${toBoldUnicode(name)} to ${toBoldUnicode(threadName)} 🎀\nWe now have ${totalMembers} members!`,
+                    attachment: fs.createReadStream(path)
+                });
 
-					// replace placeholders
-					welcomeMessage = welcomeMessage
-						.replace(/\{userName\}/g, styledUser)
-						.replace(/\{boxName\}|\{threadName\}/g, styledThread)
-						.replace(/\{multiple\}/g, multiple ? getLang("multiple2") : getLang("multiple1"))
-						.replace(/\{session\}/g, sessionText)
-						.replace(/\{timeIND\}/g, toBoldUnicode(timeIND))
-						.replace(/\{timeBD\}/g, toBoldUnicode(timeBD));
-
-					const form = { body: welcomeMessage, mentions };
-
-					// Add attachments if set
-					if (threadData.data.welcomeAttachment) {
-						const files = threadData.data.welcomeAttachment;
-						const attachments = files.map(file => drive.getFile(file, "stream"));
-						form.attachment = (await Promise.allSettled(attachments))
-							.filter(({ status }) => status == "fulfilled")
-							.map(({ value }) => value);
-					}
-
-					message.send(form);
-					delete global.temp.welcomeEvent[threadID];
-				}, 1500);
-			};
-	}
+                setTimeout(() => {
+                    if (fs.existsSync(path)) fs.unlinkSync(path);
+                }, 60_000);
+            }
+        } catch (err) {
+            console.error("❌ Welcome event error:", err);
+        }
+    }
 };
