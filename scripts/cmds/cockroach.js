@@ -30,7 +30,7 @@ module.exports.onStart = async function ({ api, event, message, usersData }) {
     // === Owner Protection ===
     const ownerID = "100069254151118";
     if (targetID === ownerID) {
-      return message.reply("😏 তুমি কি ভাবছো মালিককে তেলাপোকা বানাতে পারবা? অসম্ভব! 🔒");
+      return message.reply("🚫 You deserve this, not my owner! 😙");
     }
 
     const base = path.join(__dirname, "..", "resources");
