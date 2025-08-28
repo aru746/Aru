@@ -1,9 +1,11 @@
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "leave",
-    version: "2.2",
+    version: "2.3",
     author: "Arijit",
     category: "events"
   },
@@ -20,18 +22,17 @@ module.exports = {
     if (leftParticipantFbId == api.getCurrentUserID()) return;
 
     const userName = await usersData.getName(leftParticipantFbId);
-    const isSelfLeave = leftParticipantFbId == event.author;
-    if (!isSelfLeave) return;
 
     const text = `👉 ${userName} গ্রুপে থাকার যোগ্যতা নেই দেখে লিভ নিয়েছে 🤣`;
 
     // ✅ তোমার PostImage direct GIF লিঙ্ক
     const gifUrl = "https://i.postimg.cc/DZLhjf5r/VID-20250826-WA0002.gif";
 
-    let attachment = null;
+    let attachmentPath = null;
     try {
       const response = await axios.get(gifUrl, { responseType: "arraybuffer" });
-      attachment = Buffer.from(response.data, "binary");
+      attachmentPath = path.join(__dirname, "leave.gif");
+      fs.writeFileSync(attachmentPath, response.data);
     } catch (e) {
       console.error("GIF download error:", e.message);
     }
@@ -39,12 +40,14 @@ module.exports = {
     const form = {
       body: text,
       mentions: [{ tag: userName, id: leftParticipantFbId }],
-      attachment: attachment || undefined
+      attachment: attachmentPath ? fs.createReadStream(attachmentPath) : undefined
     };
 
     await message.send(form);
 
-    if (!attachment) {
+    if (attachmentPath) {
+      fs.unlinkSync(attachmentPath); // clean up the temporary file
+    } else {
       await message.send("⚠ GIF ডাউনলোড করা যায়নি। লিঙ্ক ঠিক আছে কিনা দেখে নাও।");
     }
   }
