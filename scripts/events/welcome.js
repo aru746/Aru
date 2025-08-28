@@ -2,9 +2,9 @@ const { createCanvas, loadImage } = require("canvas");
 const axios = require("axios");
 const moment = require("moment-timezone");
 const fs = require("fs-extra");
+const path = require("path");
 
-if (!global.temp.welcomeEvent)
-    global.temp.welcomeEvent = {};
+if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
 
 function toBoldUnicode(name) {
     const boldAlphabet = {
@@ -21,42 +21,44 @@ function toBoldUnicode(name) {
 module.exports = {
     config: {
         name: "welcome",
-        version: "4.6",
-        author: "Arijit (Fixed by ChatGPT)",
+        version: "5.0",
+        author: "kuze",
         category: "events"
     },
 
-    onStart: async function ({ event, api, threadsData, message }) {
+    onStart: async function ({ event, api, threadsData }) {
         if (event.logMessageType !== "log:subscribe") return;
 
         try {
             const { threadID } = event;
-            const dataAddedParticipants = event.logMessageData.addedParticipants || [];
+            const addedParticipants = event.logMessageData?.addedParticipants || [];
             const threadData = await threadsData.get(threadID) || {};
             const threadInfo = await api.getThreadInfo(threadID);
 
             const threadName = threadData.threadName || threadInfo.threadName || "Group";
             const totalMembers = threadInfo.participantIDs?.length || 0;
 
-            // Male/female count
-            const male = threadInfo.userInfo.filter(u => u.gender === "MALE").length;
-            const female = threadInfo.userInfo.filter(u => u.gender === "FEMALE").length;
+            // Count male/female safely
+            let male = 0, female = 0;
+            if (threadInfo.userInfo && Array.isArray(threadInfo.userInfo)) {
+                male = threadInfo.userInfo.filter(u => u.gender === "MALE").length;
+                female = threadInfo.userInfo.filter(u => u.gender === "FEMALE").length;
+            }
 
-            for (const user of dataAddedParticipants) {
-                const uid = user.userFbId;
+            for (const user of addedParticipants) {
+                const uid = user.userFbId || user.id || "0";
                 const name = user.fullName || "New Member";
 
-                // Avatar (fallback if fails)
+                // Load avatar safely
                 let avatar;
                 try {
                     const avatarURL = `https://graph.facebook.com/${uid}/picture?width=512&height=512&access_token=6628568379%7C7a7f6f3b95bd29d2a0e1a64c82f9d0d1`;
                     avatar = await loadImage(avatarURL);
                 } catch {
-                    avatar = await loadImage(__dirname + "/cache/default_avatar.png"); // fallback image
+                    avatar = await loadImage(path.join(__dirname, "cache", "default_avatar.png"));
                 }
 
-                // Background image
-                const bg = await loadImage(__dirname + "/cache/wlc.jpg");
+                const bg = await loadImage(path.join(__dirname, "cache", "wlc.jpg"));
                 const canvas = createCanvas(1200, 675);
                 const ctx = canvas.getContext("2d");
 
@@ -88,13 +90,12 @@ module.exports = {
                 ctx.font = "28px Arial";
                 ctx.fillText(`You are the ${totalMembers}th member!`, 600, 470);
 
-                // Graph-style stats box
+                // Stats box
                 ctx.fillStyle = "rgba(0,0,0,0.6)";
                 ctx.fillRect(250, 500, 700, 120);
 
                 ctx.fillStyle = "#A0CFFF";
                 ctx.font = "26px Arial";
-                ctx.textAlign = "center";
                 ctx.fillText(`${totalMembers} Members • ${male} Male • ${female} Female`, 600, 545);
 
                 ctx.fillStyle = "#FFD700";
@@ -112,16 +113,16 @@ module.exports = {
                 ctx.fillText(`🕒 India: ${timeIND} | Bangladesh: ${timeBD}`, 600, 605);
 
                 // Save & send
-                const path = __dirname + `/cache/welcome_${uid}.png`;
-                fs.writeFileSync(path, canvas.toBuffer("image/png"));
+                const filePath = path.join(__dirname, "cache", `welcome_${uid}.png`);
+                fs.writeFileSync(filePath, canvas.toBuffer("image/png"));
 
-                await message.send({
+                await api.sendMessage({
                     body: `🎀 Welcome ${toBoldUnicode(name)} to ${toBoldUnicode(threadName)} 🎀\nWe now have ${totalMembers} members!`,
-                    attachment: fs.createReadStream(path)
-                });
+                    attachment: fs.createReadStream(filePath)
+                }, threadID);
 
                 setTimeout(() => {
-                    if (fs.existsSync(path)) fs.unlinkSync(path);
+                    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                 }, 60_000);
             }
         } catch (err) {
