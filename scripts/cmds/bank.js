@@ -31,7 +31,7 @@ module.exports = {
     category: "Economy",
     countDown: 5,
     role: 0,
-    author: "Loufi | SiAM | Samuel | Abir | Arijit",
+    author: "[Loufi + Siam + Samuel + Abir + Arijit]",
   },
 
   onStart: async function ({ args, message, event, api, usersData }) {
@@ -50,35 +50,35 @@ module.exports = {
       case "deposit":
       case "-d": {
         if (isNaN(amount) || amount <= 0)
-          return message.reply("❌ Please enter a valid amount to deposit.");
+          return message.reply("❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐞𝐧𝐭𝐞𝐫 𝐚 𝐯𝐚𝐥𝐢𝐝 𝐚𝐦𝐨𝐮𝐧𝐭 𝐭𝐨 𝐝𝐞𝐩𝐨𝐬𝐢𝐭.");
 
-        const userMoney = await usersData.get(userID, "money");
+        const userMoney = await usersData.get(userID, "money") || 0;
         if (userMoney < amount)
-          return message.reply("❌ You don't have enough money to deposit.");
+          return message.reply("❌ 𝗬𝗼𝘂 𝗱𝗼𝗻'𝘁 𝗵𝗮𝘃𝗲 𝗲𝗻𝗼𝘂𝗴𝗵 𝗺𝗼𝗻𝗲𝘆 𝘁𝗼 𝗱𝗲𝗽𝗼𝘀𝗶𝘁.");
 
         userBankData.bank += amount;
         await userBankData.save();
         await usersData.set(userID, { money: userMoney - amount });
 
-        return message.reply(`✅ Successfully deposited $${formatNumberWithFullForm(amount)}.`);
+        return message.reply(`✅ 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐝𝐞𝐩𝐨𝐬𝐢𝐭𝐞𝐝: $${formatNumberWithFullForm(amount)}.`);
       }
 
       // Withdraw
       case "withdraw":
       case "-w": {
         if (isNaN(amount) || amount <= 0)
-          return message.reply("❌ Please enter the correct amount to withdraw.");
+          return message.reply("❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐞𝐧𝐭𝐞𝐫 𝐭𝐡𝐞 𝐜𝐨𝐫𝐫𝐞𝐜𝐭 𝐚𝐦𝐨𝐮𝐧𝐭 𝐭𝐨 𝐰𝐢𝐭𝐡𝐝𝐫𝐚𝐰.");
 
         if (userBankData.bank < amount)
-          return message.reply("❌ You don't have enough money in your bank to withdraw.");
+          return message.reply("❌ 𝗬𝗼𝘂 𝗱𝗼𝗻'𝘁 𝗵𝗮𝘃𝗲 𝗲𝗻𝗼𝘂𝗴𝗵 𝗺𝗼𝗻𝗲𝘆 𝗶𝗻 𝘆𝗼𝘂𝗿 𝗯𝗮𝗻𝗸 𝘁𝗼 𝘄𝗶𝘁𝗵𝗱𝗿𝗮𝘄.");
 
         userBankData.bank -= amount;
         await userBankData.save();
 
-        const updatedMoney = await usersData.get(userID, "money");
+        const updatedMoney = await usersData.get(userID, "money") || 0;
         await usersData.set(userID, { money: updatedMoney + amount });
 
-        return message.reply(`✅ Withdrew $${formatNumberWithFullForm(amount)}. New bank: $${formatNumberWithFullForm(userBankData.bank)}.`);
+        return message.reply(`✅ 𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐰𝐢𝐭𝐡𝐝𝐫𝐞𝐰: $${formatNumberWithFullForm(amount)}.`);
       }
 
       // Balance
@@ -91,11 +91,11 @@ module.exports = {
       case "interest":
       case "i": {
         const interestRate = 0.001; // 0.1% daily
-        const lastClaimed = userBankData.lastInterestClaimed || Date.now();
+        const lastClaimed = new Date(userBankData.lastInterestClaimed).getTime();
         const timeElapsed = (Date.now() - lastClaimed) / (1000 * 60 * 60 * 24);
 
         if (timeElapsed < 1) {
-          return message.reply("🕒 You can claim interest only once every 24 hours.");
+          return message.reply("🕒 𝗬𝗼𝘂 𝗰𝗮𝗻 𝗰𝗹𝗮𝗶𝗺 𝗶𝗻𝘁𝗲𝗿𝗲𝘀𝘁 𝗼𝗻𝗹𝘆 𝗼𝗻𝗰𝗲 𝗲𝘃𝗲𝗿𝘆 24 𝗵𝗼𝘂𝗿𝘀.");
         }
 
         const interest = userBankData.bank * interestRate * Math.floor(timeElapsed);
@@ -103,14 +103,14 @@ module.exports = {
         userBankData.lastInterestClaimed = Date.now();
         await userBankData.save();
 
-        return message.reply(`🎀 You earned $${formatNumberWithFullForm(interest)} interest. New balance: $${formatNumberWithFullForm(userBankData.bank)}.`);
+        return message.reply(`🎀 𝗕𝗮𝗯𝘆 𝘆𝗼𝘂 𝗲𝗮𝗿𝗻𝗲𝗱 $${formatNumberWithFullForm(interest)} 𝗶𝗻𝘁𝗲𝗿𝗲𝘀𝘁.\n🎀 𝗡𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲: $${formatNumberWithFullForm(userBankData.bank)}.`);
       }
 
       // Transfer
       case "transfer":
       case "-t": {
         if (isNaN(amount) || amount <= 0) {
-          return message.reply("❌ Please enter a valid amount to transfer.");
+          return message.reply("❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐞𝐧𝐭𝐞𝐫 𝐚 𝐯𝐚𝐥𝐢𝐝 𝐚𝐦𝐨𝐮𝐧𝐭 𝐭𝐨 𝘁𝗿𝗮𝗻𝘀𝗳𝗲𝗿.");
         }
 
         let recipientUID;
@@ -119,15 +119,15 @@ module.exports = {
         } else if (Object.keys(event.mentions).length > 0) {
           recipientUID = Object.keys(event.mentions)[0];
         } else {
-          return message.reply("❌ Please mention or reply to the user you want to transfer money to.");
+          return message.reply("❌ 𝗣𝗹𝗲𝗮𝘀𝗲 𝗺𝗲𝗻𝘁𝗶𝗼𝗻 𝗼𝗿 𝗿𝗲𝗽𝗹𝘆 𝘁𝗼 𝘁𝗵𝗲 𝘂𝘀𝗲𝗿 𝘆𝗼𝘂 𝘄𝗮𝗻𝘁 𝘁𝗼 𝘁𝗿𝗮𝗻𝘀𝗳𝗲𝗿 𝗺𝗼𝗻𝗲𝘆 𝘁𝗼.");
         }
 
         if (recipientUID === userID) {
-          return message.reply("❌ You cannot transfer money to yourself.");
+          return message.reply("❌ 𝗬𝗼𝘂 𝗰𝗮𝗻𝗻𝗼𝘁 𝘁𝗿𝗮𝗻𝘀𝗳𝗲𝗿 𝗺𝗼𝗻𝗲𝘆 𝘁𝗼 𝘆𝗼𝘂𝗿𝘀𝗲𝗹𝗳.");
         }
 
         if (userBankData.bank < amount) {
-          return message.reply("❌ You don't have enough money in your bank to transfer.");
+          return message.reply("❌ 𝗬𝗼𝘂 𝗱𝗼𝗻'𝘁 𝗵𝗮𝘃𝗲 𝗲𝗻𝗼𝘂𝗴𝗵 𝗺𝗼𝗻𝗲𝘆 𝗶𝗻 𝘆𝗼𝘂𝗿 𝗯𝗮𝗻𝗸 𝘁𝗼 𝘁𝗿𝗮𝗻𝘀𝗳𝗲𝗿.");
         }
 
         let recipientBankData = await Bank.findOne({ userID: recipientUID });
@@ -141,10 +141,10 @@ module.exports = {
         await userBankData.save();
         await recipientBankData.save();
 
-        const senderName = await usersData.get(userID, "name");
-        const recipientName = await usersData.get(recipientUID, "name");
+        const senderName = await usersData.get(userID, "name") || "Unknown";
+        const recipientName = await usersData.get(recipientUID, "name") || "Unknown";
 
-        return message.reply(`✅ ${boldText(senderName)} transferred $${formatNumberWithFullForm(amount)} to ${boldText(recipientName)}.`);
+        return message.reply(`✅ ${toBoldUnicode(senderName)} 𝗧𝗿𝗮𝗻𝘀𝗳𝗲𝗿𝗿𝗲𝗱 $${formatNumberWithFullForm(amount)} 𝘁𝗼 ${toBoldUnicode(recipientName)}.`);
       }
 
       // Top leaderboard
@@ -153,8 +153,8 @@ module.exports = {
         const medals = ["🥇", "🥈", "🥉"];
 
         const leaderboard = await Promise.all(topUsers.map(async (user, index) => {
-          const userName = await usersData.get(user.userID, "name");
-          const boldName = boldText(userName);
+          const userName = await usersData.get(user.userID, "name") || "Unknown";
+          const boldName = toBoldUnicode(userName);
           let rank;
           if (index < 3) {
             rank = medals[index];
@@ -165,7 +165,7 @@ module.exports = {
           return `${rank} ${boldName} - $${formatNumberWithFullForm(user.bank)}`;
         }));
 
-        return message.reply(`[ 🏦 ALYA BANK 🏦 ]\n\n👑  | 𝐓𝐨𝐩 𝟏𝟓 𝐫𝐢𝐜𝐡𝐞𝐬𝐭 𝐛𝐚𝐧𝐤 𝐮𝐬𝐞𝐫𝐬 :\n\n${leaderboard.join("\n")}`);
+        return message.reply(`[ 🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊 🏦 ]\n\n👑 | 𝐓𝐨𝐩 𝟏𝟓 𝐫𝐢𝐜𝐡𝐞𝐬𝐭 𝐛𝐚𝐧𝐤 𝐮𝐬𝐞𝐫𝐬:\n\n${leaderboard.join("\n")}`);
       }
 
       // Help menu
@@ -187,7 +187,7 @@ module.exports = {
 // ✅ Format numbers with bold suffixes
 function formatNumberWithFullForm(number) {
   number = Number(number);
-  const fullForms = ["", "𝗞", "𝗠", "𝗕", "𝗧", "𝗤"];
+  const fullForms = ["", "𝐊", "𝐌", "𝐁", "𝐓", "𝐐"]; // Bold suffixes
   let index = 0;
 
   while (number >= 1000 && index < fullForms.length - 1) {
@@ -198,14 +198,18 @@ function formatNumberWithFullForm(number) {
   return `${number.toFixed(1)}${fullForms[index]}`;
 }
 
-// ✅ Convert text into bold Unicode
-function boldText(str) {
-  const normal = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const bold =   "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭" +
-                 "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇" +
-                 "𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟟𝟠𝟡";
-  return str.split("").map(c => {
-    const i = normal.indexOf(c);
-    return i !== -1 ? bold[i] : c;
-  }).join("");
+// ✅ Unicode bold converter
+function toBoldUnicode(name) {
+  const boldAlphabet = {
+    "a": "𝐚","b": "𝐛","c": "𝐜","d": "𝐝","e": "𝐞","f": "𝐟","g": "𝐠","h": "𝐡","i": "𝐢","j": "𝐣",
+    "k": "𝐤","l": "𝐥","m": "𝐦","n": "𝐧","o": "𝐨","p": "𝐩","q": "𝐪","r": "𝐫","s": "𝐬","t": "𝐭",
+    "u": "𝐮","v": "𝐯","w": "𝐰","x": "𝐱","y": "𝐲","z": "𝐳",
+    "A": "𝐀","B": "𝐁","C": "𝐂","D": "𝐃","E": "𝐄","F": "𝐅","G": "𝐆","H": "𝐇","I": "𝐈","J": "𝐉",
+    "K": "𝐊","L": "𝐋","M": "𝐌","N": "𝐍","O": "𝐎","P": "𝐏","Q": "𝐐","R": "𝐑","S": "𝐒","T": "𝐓",
+    "U": "𝐔","V": "𝐕","W": "𝐖","X": "𝐗","Y": "𝐘","Z": "𝐙",
+    "0": "0","1": "1","2": "2","3": "3","4": "4","5": "5","6": "6","7": "7","8": "8","9": "9",
+    " ": " ","'": "'",
+    ",": ",",".": ".","-": "-","!": "!","?": "?"
+  };
+  return name.split('').map(char => boldAlphabet[char] || char).join('');
 }
