@@ -46,6 +46,7 @@ module.exports = {
     }
 
     switch (command) {
+      // Deposit
       case "deposit":
       case "-d": {
         if (isNaN(amount) || amount <= 0)
@@ -62,6 +63,7 @@ module.exports = {
         return message.reply(`✅ Successfully deposited $${formatNumberWithFullForm(amount)}.`);
       }
 
+      // Withdraw
       case "withdraw":
       case "-w": {
         if (isNaN(amount) || amount <= 0)
@@ -79,16 +81,18 @@ module.exports = {
         return message.reply(`✅ Withdrew $${formatNumberWithFullForm(amount)}. New bank: $${formatNumberWithFullForm(userBankData.bank)}.`);
       }
 
+      // Balance
       case "balance":
       case "bal": {
         return message.reply(`𝐘𝐨𝐮𝐫 𝐛𝐚𝐧𝐤 𝐛𝐚𝐥𝐚𝐧𝐜𝐞: $${formatNumberWithFullForm(userBankData.bank)}`);
       }
 
+      // Interest
       case "interest":
       case "i": {
-        const interestRate = 0.001; // 0.1% daily interest
+        const interestRate = 0.001; // 0.1% daily
         const lastClaimed = userBankData.lastInterestClaimed || Date.now();
-        const timeElapsed = (Date.now() - lastClaimed) / (1000 * 60 * 60 * 24); // in days
+        const timeElapsed = (Date.now() - lastClaimed) / (1000 * 60 * 60 * 24);
 
         if (timeElapsed < 1) {
           return message.reply("🕒 You can claim interest only once every 24 hours.");
@@ -102,6 +106,7 @@ module.exports = {
         return message.reply(`🎀 You earned $${formatNumberWithFullForm(interest)} interest. New balance: $${formatNumberWithFullForm(userBankData.bank)}.`);
       }
 
+      // Transfer
       case "transfer":
       case "-t": {
         if (isNaN(amount) || amount <= 0) {
@@ -139,29 +144,31 @@ module.exports = {
         const senderName = await usersData.get(userID, "name");
         const recipientName = await usersData.get(recipientUID, "name");
 
-        return message.reply(`✅ ${senderName} transferred $${formatNumberWithFullForm(amount)} to ${recipientName}.`);
+        return message.reply(`✅ ${boldText(senderName)} transferred $${formatNumberWithFullForm(amount)} to ${boldText(recipientName)}.`);
       }
 
+      // Top leaderboard
       case "top": {
         const topUsers = await Bank.find().sort({ bank: -1 }).limit(15);
         const medals = ["🥇", "🥈", "🥉"];
 
         const leaderboard = await Promise.all(topUsers.map(async (user, index) => {
           const userName = await usersData.get(user.userID, "name");
+          const boldName = boldText(userName);
           let rank;
           if (index < 3) {
             rank = medals[index];
           } else {
-            // Bold unicode numbers for 4-15
             const numberMap = { "0": "𝟎","1":"𝟏","2":"𝟐","3":"𝟑","4":"𝟒","5":"𝟓","6":"𝟔","7":"𝟕","8":"𝟖","9":"𝟗" };
             rank = String(index + 1).split("").map(d => numberMap[d] || d).join("") + ".";
           }
-          return `${rank} ${userName} - $${formatNumberWithFullForm(user.bank)}`;
+          return `${rank} ${boldName} - $${formatNumberWithFullForm(user.bank)}`;
         }));
 
-        return message.reply(`[ 🏦 ALYA BANK 🏦 ]\n\n👑 | 𝐓𝐨𝐩 15 richest bank users:\n\n${leaderboard.join("\n")}`);
+        return message.reply(`[ 🏦 ALYA BANK 🏦 ]\n\n👑  | 𝐓𝐨𝐩 𝟏𝟓 𝐫𝐢𝐜𝐡𝐞𝐬𝐭 𝐛𝐚𝐧𝐤 𝐮𝐬𝐞𝐫𝐬 :\n\n${leaderboard.join("\n")}`);
       }
 
+      // Help menu
       default:
         return message.reply(
           `╭─[🏦 𝐀𝐋𝐘𝐀 𝐁𝐀𝐍𝐊 🏦]
@@ -177,9 +184,10 @@ module.exports = {
   },
 };
 
+// ✅ Format numbers with bold suffixes
 function formatNumberWithFullForm(number) {
   number = Number(number);
-  const fullForms = ["", "K", "M", "B", "T", "Q"];
+  const fullForms = ["", "𝗞", "𝗠", "𝗕", "𝗧", "𝗤"];
   let index = 0;
 
   while (number >= 1000 && index < fullForms.length - 1) {
@@ -188,4 +196,16 @@ function formatNumberWithFullForm(number) {
   }
 
   return `${number.toFixed(1)}${fullForms[index]}`;
+}
+
+// ✅ Convert text into bold Unicode
+function boldText(str) {
+  const normal = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const bold =   "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭" +
+                 "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇" +
+                 "𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟟𝟠𝟡";
+  return str.split("").map(c => {
+    const i = normal.indexOf(c);
+    return i !== -1 ? bold[i] : c;
+  }).join("");
 }
