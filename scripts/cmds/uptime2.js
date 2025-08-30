@@ -1,22 +1,27 @@
 const os = require("os");
+const { execFile } = require("child_process");
 const util = require("util");
-const exec = util.promisify(require("child_process").exec);
+const execFilePromise = util.promisify(execFile);
 
-// Unicode gradient frames for title animation
+// Gradient title frames
 const gradientFrames = [
   "🄰🄻🅈🄰 🄲🄷🄰🄽",
   "🅐🅛🅨🅐 🅒🅗🅐🅝",
-  "ＡＬＹＡ ＣＨＡＮ",
+  "ＡＬＹＡ ＣＨ𝐀𝐍",
   "𝐀𝐋𝐘𝐀 𝐂𝐇𝐀𝐍",
   "🄰🄻🅈🄰 🄲🄷🄰🄽"
 ];
+
+// Patch for environments where clearLine / cursorTo is missing
+if (!process.stderr.clearLine) process.stderr.clearLine = () => {};
+if (!process.stderr.cursorTo) process.stderr.cursorTo = () => {};
 
 module.exports = {
   config: {
     name: "uptime2",
     aliases: ["upt2", "up2"],
-    version: "1.7",
-    author: "Arijit (fixed & tested 100%)",
+    version: "2.0",
+    author: "Arijit (fully fixed 100%)",
     role: 0,
     category: "𝗦𝗬𝗦𝗧𝗘𝗠",
     guide: { en: "Use {pn}" }
@@ -24,7 +29,6 @@ module.exports = {
 
   onStart: async function ({ message, api }) {
     try {
-      // ----- System Info -----
       const uptime = process.uptime();
       const formattedUptime = formatMilliseconds(uptime * 1000);
 
@@ -44,10 +48,8 @@ module.exports = {
         processMemory: prettyBytes(process.memoryUsage().rss)
       };
 
-      // ----- Gradient Title -----
       const gradientTitle = gradientFrames[Math.floor(Math.random() * gradientFrames.length)];
 
-      // ----- Message Content -----
       const response =
 `╔════════•❀•════════╗
 ⋆˚🦋${gradientTitle}🎀🍓˚⋆
@@ -72,10 +74,9 @@ module.exports = {
 📊 𝗣𝗥𝗢𝗖𝗘𝗦𝗦 𝗠𝗘𝗠𝗢𝗥𝗬: ${systemInfo.processMemory}
 ────────────────────`;
 
-      // ----- Send Message -----
       const sentMessage = await message.reply(response);
 
-      // ----- Auto Unsend after 15 seconds -----
+      // Auto-unsend after 15s
       setTimeout(async () => {
         try {
           await api.unsendMessage(sentMessage.messageID);
@@ -91,11 +92,13 @@ module.exports = {
   }
 };
 
-// ---------- Helpers ----------
+// ----- Helpers -----
 async function getDiskUsage() {
   try {
-    const { stdout } = await exec("df -k /");
-    const parts = stdout.split("\n")[1].split(/\s+/).filter(Boolean);
+    const { stdout } = await execFilePromise("df", ["-k", "/"]);
+    if (!stdout) return { total: 0, used: 0 };
+    const parts = stdout.split("\n")[1]?.split(/\s+/).filter(Boolean);
+    if (!parts || parts.length < 3) return { total: 0, used: 0 };
     const total = parseInt(parts[1]) * 1024;
     const used = parseInt(parts[2]) * 1024;
     return { total, used };
