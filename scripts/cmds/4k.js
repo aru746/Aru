@@ -1,54 +1,34 @@
-const fs = require("fs-extra");
-const axios = require("axios");
-const path = require("path");
+const apiUrl = "https://www.noobs-apis.run.place";
 
 module.exports = {
   config: {
-    name: "4k",
-    version: "1.1",
-    author: "Raihan Fiba",
-    countDown: 5,
-    role: 0,
-    shortDescription: "Upscale image to 4K",
-    longDescription: "Upscale replied image to 4K quality using Kaiz API",
-    category: "𝐈𝐌𝐀𝐆𝐄",
-    guide: {
-      en: "{p}4k (reply to an image)"
-    }
+  name: "upscale",
+  aliases: ["4k", "ups"],
+  version: "1.6.9",
+  author: "Nazrul",
+  role: 0,
+  description: "Upscale image by URL or reply",
+  category: "image",
+  countDown: 9,
+  guide: { en: "{pn} [url] or reply to image" }
   },
 
-  onStart: async function({ api, event }) {
-    const { messageReply, threadID, messageID } = event;
+  onStart: async ({ message, event, args }) => {
+ const s = Date.now();
+let imgUrl; if (event.messageReply?.attachments?.[0]?.type === "photo") { imgUrl = event.messageReply.attachments[0].url } else if (args[0]) { imgUrl = args.join(" ")}
 
-    if (!messageReply || !messageReply.attachments || messageReply.attachments.length === 0 || messageReply.attachments[0].type !== "photo") {
-      return api.sendMessage("❌ | Please reply to an image to upscale it to 4K.", threadID, messageID);
+  if (!imgUrl) {
+      return message.reply("• Reply to image or provide imgUrl!");
     }
-
-    // Send "Processing..." message first
-    const waitMsg = await api.sendMessage("⏳ | 𝐏𝐥𝐞𝐚𝐬𝐞 𝐰𝐚𝐢𝐭, 𝐩𝐫𝐨𝐜𝐞𝐬𝐬𝐢𝐧𝐠", threadID, messageID);
-
-    const imgUrl = encodeURIComponent(messageReply.attachments[0].url);
-    const apiUrl = `https://kaiz-apis.gleeze.com/api/upscale?imageUrl=${imgUrl}&apikey=f2ce3b96-a3a7-4693-a19e-3daf4aa64675`;
-
-    const tmpPath = path.join(__dirname, "cache", `${Date.now()}_4k.jpg`);
-
+  message.reaction('🫡', event.messageID);
     try {
-      const response = await axios.get(apiUrl, { responseType: "stream" });
-
-      response.data.pipe(fs.createWriteStream(tmpPath)).on("finish", async () => {
-        // Delete the wait message
-        await api.unsendMessage(waitMsg.messageID);
-
-        // Send the upscaled image
-        api.sendMessage({
-          body: "✅ | Here is your 4K upscaled image.",
-          attachment: fs.createReadStream(tmpPath)
-        }, threadID, () => fs.unlinkSync(tmpPath));
-      });
-    } catch (e) {
-      console.error(e);
-      await api.unsendMessage(waitMsg.messageID);
-      api.sendMessage("❌ | Failed to upscale the image. Please try again later.", threadID, messageID);
+      const res = await require('axios').get(`${apiUrl}/nazrul/upscale?imgUrl=${encodeURIComponent(imgUrl)}`, { responseType: "stream" });
+  message.reaction('✅', event.messageID);
+  const t = ((Date.now() - s) / 1000).toFixed(2);
+  message.reply({ body: `✅ Here's your Upscaled Image!\n⌛ Process time : ${t} `, attachment: res.data });
+    } catch (error) {
+      message.reaction('❌', event.messageID);
+      message.reply(`error: ${error.message}`);
     }
   }
 };
