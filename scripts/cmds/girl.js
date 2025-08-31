@@ -5,12 +5,12 @@ module.exports = {
     name: "girl",
     aliases: ["g"],
     version: "1.4",
-    author: "AceGun + Arijit",
+    author: "AceGun",
     countDown: 5,
     role: 2, // 🔒 Only bot admins
     shortDescription: "Send a random girl photo (Admin only + Security Key)",
     longDescription: "Sends a random girl image from a large collection. Admins only + Requires security key.",
-    category: "media",
+    category: "18+",
     guide: "{pn} 2005"
   },
 
