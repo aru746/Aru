@@ -6,7 +6,7 @@ module.exports = {
   config: {
     name: "pair2",
     author: 'Nyx x Ariyan and fixed by Arijit',
-    category: "TOOLS"
+    category: "love"
   },
 
   onStart: async function ({ api, event, usersData }) {
