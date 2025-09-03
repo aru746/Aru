@@ -21,7 +21,7 @@ module.exports = {
     role: 2,
     shortDescription: "Set balance for all users",
     longDescription: "Update all users' balances (including yourself) to the same amount.",
-    category: "economy",
+    category: "owner",
     guide: {
       en: "{pn} <amount>\nExample: {pn} 1000000"
     }
