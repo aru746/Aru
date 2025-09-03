@@ -20,14 +20,30 @@ module.exports.onStart = async function ({ message, args }) {
   const apiUrl = await Arijit();
 
   if (args[0] === "list") {
-    try {
-      const fontList = (await axios.get(`${apiUrl}/api/font/list`)).data.replace("Available Font Styles:", "").trim();
-      return fontList 
-        ? message.reply(`Available Font Styles (Arijit):\n${fontList}`) 
-        : message.reply("No font styles found.");
-    } catch {
-      return message.reply("Error fetching font styles.");
-    }
+    return message.reply(
+`Available Font Styles (Arijit):
+
+1: Ă̈r̆̈ĭ̈j̆̈ĭ̈t̆̈
+2: 𝘈𝘳𝘪𝘫𝘪𝘵
+3: 𝗔𝗿𝗶𝗷𝗶𝘁
+4: 🅐🅡🅘🅙🅘🅣
+5: ᴬᴿᴵᴶᴵᵀ
+6: Ａｒｉｊｉｔ
+7: 𝙰𝚛𝚒𝚓𝚒𝚝
+8: 𝔸𝕣𝕚𝕛𝕚𝕥
+9: 𝘈𝘳𝘪𝘫𝘪𝘵
+10: Ａⅈ𝚛𝘪𝘫𝘪𝘵
+11: 𝐀𝐫𝐢𝐣𝐢𝐭
+12: 🄰🅁🄸🄹🄸🅃
+13: Ⓐⓡⓘⓙⓘⓣ
+14: 𝕬𝖗𝖎𝖏𝖎𝖙
+15: ᵃʳᶤʲᶤᵗ
+16: 🅰🆁🅸🅹🅸🆃
+17: ᴬᴿᴵᴶᴵᵀ
+18: A̷r̷i̷j̷i̷t̷
+19: ȺᴿɨᴊᴵŦ
+20: Aяιjιт`
+    );
   }
 
   const [number, ...textParts] = args;
