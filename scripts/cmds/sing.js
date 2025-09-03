@@ -1,54 +1,97 @@
-const axios = require("axios");
+const axios = require('axios');
+const yts = require("yt-search");
 
-const mahmud = async () => {
-  const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/exe/main/baseApiUrl.json");
-  return base.data.mahmud;
+const baseApiUrl = async () => {
+    const base = await axios.get(
+        `https://raw.githubusercontent.com/Blankid018/D1PT0/main/baseApiUrl.json`
+    );
+    return base.data.api;
 };
 
-module.exports = {
-    config: {
-        name: "sing",
-        version: "1.7",
-        author: "MahMUD", 
-        countDown: 10,
-        role: 0,
-        category: "music",
-        guide: "{p}sing [song name]"
-    },
+(async () => {
+    global.apis = {
+        diptoApi: await baseApiUrl()
+    };
+})();
 
-    onStart: async function ({ api, event, args, message }) {
-        if (args.length === 0) {
-            return message.reply("❌ | Please provide a song name\n\nExample: sing mood lofi");
-        }
-
-        try {
-            const query = encodeURIComponent(args.join(" "));
-            const apiUrl = `${await mahmud()}/api/sing2?songName=${query}`;
-
-            const response = await axios.get(apiUrl, {
-                responseType: "stream",
-                headers: { "author": module.exports.config.author }
-            });
-
-            if (response.data.error) {
-                return message.reply(`${response.data.error}`);
-            }
-
-            message.reply({
-                body: `✅ | 𝐇𝐞𝐫𝐞'𝐬 𝐲𝐨𝐮𝐫 𝐬𝐨𝐧𝐠: ${args.join(" ")}`,
-                attachment: response.data
-            });
-
-        } catch (error) {
-            console.error("Error:", error.message);
-
-            if (error.response) {
-                console.error("Response error data:", error.response.data);
-                console.error("Response status:", error.response.status);
-                return message.reply(`${error.response.data.error || error.message}`);
-            }
-
-            message.reply("error🥺");
-        }
+async function getStreamFromURL(url, pathName) {
+    try {
+        const response = await axios.get(url, {
+            responseType: "stream"
+        });
+        response.data.path = pathName;
+        return response.data;
+    } catch (err) {
+        throw err;
     }
+}
+
+global.utils = {
+    ...global.utils,
+    getStreamFromURL: global.utils.getStreamFromURL || getStreamFromURL
+};
+
+function getVideoID(url) {
+    const checkurl = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))((\w|-){11})(?:\S+)?$/;
+    const match = url.match(checkurl);
+    return match ? match[1] : null;
+}
+
+const config = {
+    name: "sing",
+    author: "Mesbah Saxx",
+    credits: "Mesbah Saxx",
+    version: "1.2.0",
+    role: 0,
+    hasPermssion: 0,
+    description: "",
+    usePrefix: true,
+    prfix: true,
+    category: "media",
+    commandCategory: "media",
+    cooldowns: 5,
+    countDown: 5,
+};
+
+async function onStart({ api, args, event }) {
+    try {
+        let videoID;
+        const url = args[0];
+        let w;
+
+        if (url && (url.includes("youtube.com") || url.includes("youtu.be"))) {
+            videoID = getVideoID(url);
+            if (!videoID) {
+                await api.sendMessage("Invalid YouTube URL.", event.threadID, event.messageID);
+            }
+        } else {
+            const songName = args.join(' ');
+            w = await api.sendMessage(`Searching song "${songName}"... `, event.threadID);
+            const r = await yts(songName);
+            const videos = r.videos.slice(0, 50);
+
+            const videoData = videos[Math.floor(Math.random() * videos.length)];
+            videoID = videoData.videoId;
+        }
+
+        const { data: { title, quality, downloadLink } } = await axios.get(`${global.apis.diptoApi}/ytDl3?link=${videoID}&format=mp3`);
+
+        api.unsendMessage(w.messageID);
+        
+        const o = '.php';
+        const shortenedLink = (await axios.get(`https://tinyurl.com/api-create${o}?url=${encodeURIComponent(downloadLink)}`)).data;
+
+        await api.sendMessage({
+            body: `🔖 - 𝚃𝚒𝚝𝚕𝚎: ${title}\n✨ - 𝚀𝚞𝚊𝚕𝚒𝚝𝚢: ${quality}\n\n📥 - 𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍 𝙻𝚒𝚗𝚔: ${shortenedLink}`,
+            attachment: await global.utils.getStreamFromURL(downloadLink, title+'.mp3')
+        }, event.threadID, event.messageID);
+    } catch (e) {
+        api.sendMessage(e.message || "An error occurred.", event.threadID, event.messageID);
+    }
+}
+
+module.exports = {
+    config,
+    onStart,
+    run: onStart
 };
