@@ -16,7 +16,7 @@ module.exports = {
     longDescription: {
       en: "Only Arijit (bot owner) can upload files to Pastebin and get a shareable link."
     },
-    category: "Utility",
+    category: "owner",
     guide: {
       en: "Use: !pastebin <filename>\n(Example: !pastebin mycmd.js)\nThe file must be in the 'cmds' folder."
     }
