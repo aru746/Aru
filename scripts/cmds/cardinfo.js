@@ -21,7 +21,7 @@ module.exports = {
  vi: "",
  en: ""
  },
- category: "logo",
+ category: "image",
  guide: {
  en: "{pn} <Name> <Sex> <followers> <love> <DOB> <Location> <FB Link>"
  }
