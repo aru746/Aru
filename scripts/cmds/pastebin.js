@@ -6,6 +6,7 @@ module.exports = {
   config: {
     name: "pastebin",
     version: "1.2",
+    aliases: [ "p-bin", "bin"],
     author: "SANDIP + Arijit",
     countDown: 5,
     role: 2, // but we override with owner check
