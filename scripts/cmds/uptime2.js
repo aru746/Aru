@@ -21,9 +21,9 @@ module.exports = {
     name: "uptime2",
     aliases: ["upt2", "up2"],
     version: "2.0",
-    author: "Arijit (fully fixed 100%)",
+    author: "Arijit",
     role: 0,
-    category: "𝗦𝗬𝗦𝗧𝗘𝗠",
+    category: "general",
     guide: { en: "Use {pn}" }
   },
 
