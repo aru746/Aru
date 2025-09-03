@@ -13,7 +13,7 @@ module.exports = {
     author: "MahMUD",
     countDown: 10,
     role: 0,
-    category: "music",
+    category: "media",
     guide: "{p}sing [song name]"
   },
 
