@@ -7,7 +7,7 @@ module.exports = {
     cooldowns: 40,
     shortdescription: "send YouTube video",
     longdescription: "",
-    category: "video",
+    category: "media",
     usages: "{pn} video name",
     dependencies: {
       "fs-extra": "",
