@@ -12,7 +12,7 @@ module.exports = {
 			uid: "Tạo ảnh từ văn bản của bạn",
 			en: "Create image from your text"
 		},
-		category: "info",
+		category: "imagine",
 		guide: {
 			vi: "   {pn} <prompt>: tạo ảnh từ văn bản của bạn"
 				+ "\n    Ví dụ: {pn} mdjrny-v4 create a gta style house, gta, 4k, hyper detailed, cinematic, realistic, unreal engine, cinematic lighting, bright lights"
