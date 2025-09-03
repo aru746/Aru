@@ -4,30 +4,31 @@ const path = require("path");
 module.exports = {
   config: {
     name: "help",
-    version: "3.4", // upgraded version
+    version: "3.7",
     author: "Arijit",
     countDown: 5,
     role: 0,
     shortDescription: { en: "Show all commands" },
-    longDescription: { en: "Displays all bot commands sorted by category, styled Alya Chan help menu" },
-    category: "system",
+    longDescription: { en: "Displays all bot commands sorted by category in styled Alya Chan box format" },
+    category: "group",
     guide: { en: "{p}help [command name]" }
   },
 
-  onStart: async function ({ message, args, prefix, api, event }) {
-    const commandsPath = path.join(__dirname, ".."); 
+  onStart: async function ({ message, args, prefix, api }) {
+    const commandsPath = path.join(__dirname, "..");
     const categories = {};
     const allCommands = new Set();
 
-    // Scan all command folders
+    // Scan command folders
     fs.readdirSync(commandsPath).forEach(folder => {
       const folderPath = path.join(commandsPath, folder);
       if (fs.lstatSync(folderPath).isDirectory()) {
         const commandFiles = fs.readdirSync(folderPath).filter(file => file.endsWith(".js"));
         for (const file of commandFiles) {
           try {
+            delete require.cache[require.resolve(path.join(folderPath, file))];
             const cmd = require(path.join(folderPath, file));
-            if (cmd.config && cmd.config.name) {
+            if (cmd.config?.name) {
               const category = cmd.config.category || "Uncategorized";
               if (!categories[category]) categories[category] = [];
               if (!allCommands.has(cmd.config.name)) {
@@ -36,27 +37,30 @@ module.exports = {
               }
             }
           } catch (e) {
-            console.error(`Error loading command ${file}:`, e);
+            console.error(`⚠️ Skipping broken command file: ${file} → ${e.message}`);
           }
         }
       }
     });
 
-    // Sort alphabetically
-    for (const category in categories) {
+    // Sort categories + commands
+    const sortedCategories = Object.keys(categories).sort();
+    for (const category of sortedCategories) {
       categories[category].sort((a, b) => a.localeCompare(b));
     }
 
     // If specific command requested
     if (args[0]) {
       const searchName = args[0].toLowerCase();
-      for (const category in categories) {
+      for (const category of sortedCategories) {
         for (const cmdName of categories[category]) {
           if (cmdName.toLowerCase() === searchName) {
             const cmdPath = findCommandPath(commandsPath, cmdName);
             if (cmdPath) {
-              const cmd = require(cmdPath);
-              const info = `
+              try {
+                delete require.cache[require.resolve(cmdPath)];
+                const cmd = require(cmdPath);
+                const info = `
 ╭─❏ 📜 𝐂𝐨𝐦𝐦𝐚𝐧𝐝 𝐈𝐧𝐟𝐨 🔖 ─❏
 │ 👑 𝐀𝐝𝐦𝐢𝐧: 𝐀 𝐑 𝐈 𝐉 𝐈 𝐓⚡
 │ 🤖 𝐁𝐨𝐭: 𝐀𝐥𝐲𝐚 𝐜𝐡𝐚𝐧🐱🎀
@@ -72,15 +76,16 @@ module.exports = {
 │ 📂 𝐂𝐚𝐭𝐞𝐠𝐨𝐫𝐲: ${cmd.config.category || "Uncategorized"}
 │ ⏳ 𝐂𝐨𝐨𝐥𝐝𝐨𝐰𝐧: ${cmd.config.countDown || 0}s
 ╰────────────────────❏
-              `.trim();
+                `.trim();
 
-              return message.reply(info, (err, infoMsg) => {
-                if (!err && infoMsg) {
-                  setTimeout(() => {
-                    api.unsendMessage(infoMsg.messageID);
-                  }, 15000);
-                }
-              });
+                return message.reply(info, (err, infoMsg) => {
+                  if (!err && infoMsg) {
+                    setTimeout(() => api.unsendMessage(infoMsg.messageID), 30000);
+                  }
+                });
+              } catch (err) {
+                return message.reply(`❌ Failed to load command "${args[0]}"`);
+              }
             }
           }
         }
@@ -88,12 +93,14 @@ module.exports = {
       return message.reply(`❌ Command "${args[0]}" not found.`);
     }
 
-    // Generate Alya Chan style menu
+    // Generate Alya Chan style menu with box layout
     let output = "╔══🎀 𝐇𝐞𝐥𝐩 𝐌𝐞𝐧𝐮 🎀══╗\n";
-    for (const category in categories) {
-      output += `\n╭─────⭓ [ ${category.toUpperCase()} ]\n`;
-      output += `│ ${categories[category].join(" ✧ ")}\n`;
-      output += `╰────────────⭓\n`;
+    for (const category of sortedCategories) {
+      if (categories[category].length > 0) {
+        output += `\n╭─────⭓ ${category.toUpperCase()}\n`;
+        output += formatBox(categories[category]);
+        output += `╰────────────⭓\n`;
+      }
     }
 
     // Footer
@@ -106,13 +113,22 @@ module.exports = {
 
     message.reply(output, (err, infoMsg) => {
       if (!err && infoMsg) {
-        setTimeout(() => {
-          api.unsendMessage(infoMsg.messageID);
-        }, 15000);
+        setTimeout(() => api.unsendMessage(infoMsg.messageID), 30000);
       }
     });
   }
 };
+
+// Format commands into box rows
+function formatBox(commands) {
+  let out = "";
+  const perRow = 2; // 2 commands per row
+  for (let i = 0; i < commands.length; i += perRow) {
+    const row = commands.slice(i, i + perRow).map(c => `✧${c}`).join(" ");
+    out += `│${row}\n`;
+  }
+  return out;
+}
 
 // Helper: find exact command file
 function findCommandPath(baseDir, commandName) {
@@ -122,9 +138,14 @@ function findCommandPath(baseDir, commandName) {
     if (fs.lstatSync(folderPath).isDirectory()) {
       const files = fs.readdirSync(folderPath).filter(f => f.endsWith(".js"));
       for (const file of files) {
-        const cmd = require(path.join(folderPath, file));
-        if (cmd.config && cmd.config.name && cmd.config.name.toLowerCase() === commandName.toLowerCase()) {
-          return path.join(folderPath, file);
+        try {
+          delete require.cache[require.resolve(path.join(folderPath, file))];
+          const cmd = require(path.join(folderPath, file));
+          if (cmd.config?.name?.toLowerCase() === commandName.toLowerCase()) {
+            return path.join(folderPath, file);
+          }
+        } catch {
+          continue;
         }
       }
     }
