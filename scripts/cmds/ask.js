@@ -9,7 +9,7 @@ module.exports = {
     version: 1.0,
     author: "OtinXSandip",
     longDescription: "AI",
-    category: "Ai - Chat",
+    category: "ai",
     guide: {
       en: "{p} questions",
     },
