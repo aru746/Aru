@@ -6,13 +6,13 @@ const Arijit = async () => {
 };
 
 module.exports.config = {
-  name: "style",
+  name: "font",
   aliases: ["font"],
   version: "1.7",
   role: 0,
   countDown: 5,
   author: "Arijit",
-  category: "general",
+  category: "group",
   guide: { en: "[number] [text] or list" }
 };
 
