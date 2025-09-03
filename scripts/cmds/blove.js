@@ -1,6 +1,6 @@
 const axios = require("axios");
 const fs = require("fs");
-const path = require("path");
+const request = require("request");
 
 const videoLinks = [
   "https://i.imgur.com/kfJCVZe.mp4",
@@ -20,58 +20,42 @@ module.exports = {
     usage: "",
     cooldown: 5,
     permissions: [0],
-    category: "auto-reply",
+    category: "auto",
     dependencies: {
+      "request": "",
       "axios": "",
       "fs-extra": ""
     }
   },
 
+  // ✅ Must-have function, even if unused
   onStart: async function () {
-    // Ensure cache folder exists
-    const cacheDir = path.join(__dirname, "cache");
-    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+    // No need to implement anything
   },
 
   onChat: async function ({ message, event }) {
     const { body } = event;
     if (!body) return;
 
-    if (body.trim().startsWith("😭")) {
+    const text = body.toLowerCase();
+
+    if (text.startsWith("😭")) {
       const captions = [
         "╭•┄┅════❁🎀❁════┅┄•╮\n\n 𝗜 𝗸𝗻𝗼𝘄 𝘆𝗼𝘂 𝗦𝗮𝗱 😔\n\n╰•┄┅════❁🎀❁════┅┄•╯",
         "╭•┄┅════❁🎀❁════┅┄•╮\n\n 𝗜 𝗸𝗻𝗼𝘄 𝘆𝗼𝘂 𝘀𝗮𝗱 😔\n\n╰•┄┅════❁🎀❁════┅┄•╯"
       ];
-
       const messageText = captions[Math.floor(Math.random() * captions.length)];
       const videoUrl = videoLinks[Math.floor(Math.random() * videoLinks.length)];
-      const videoPath = path.join(__dirname, "cache", "blove.mp4");
+      const videoPath = __dirname + "/cache/blove.mp4";
 
-      try {
-        const response = await axios({
-          url: videoUrl,
-          method: "GET",
-          responseType: "stream"
-        });
-
-        const writer = fs.createWriteStream(videoPath);
-        response.data.pipe(writer);
-
-        writer.on("finish", async () => {
-          await message.reply({
+      request(encodeURI(videoUrl))
+        .pipe(fs.createWriteStream(videoPath))
+        .on("close", () => {
+          message.reply({
             body: messageText,
             attachment: fs.createReadStream(videoPath)
-          });
-          fs.unlinkSync(videoPath); // Delete file after sending
+          }, () => fs.unlinkSync(videoPath));
         });
-
-        writer.on("error", (err) => {
-          console.error("Error writing video:", err);
-        });
-
-      } catch (error) {
-        console.error("Failed to download video:", error);
-      }
     }
   }
 };
