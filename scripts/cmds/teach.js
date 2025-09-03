@@ -12,7 +12,7 @@ module.exports.config = {
     countDown: 0,
     role: 0,
     description: "Teach Mahabub simsimi api new responses!",  
-    category: "chat",
+    category: "group",
     guide: {
         en: "{pn} [message] - [reply]"
     }
