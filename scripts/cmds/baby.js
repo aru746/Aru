@@ -11,7 +11,7 @@ module.exports.config = {
   countDown: 0,
   role: 0,
   description: "better than all sim simi",
-  category: "chat",
+  category: "group",
   guide: {
     en: "{pn} [anyMessage] OR\nteach [YourMessage] - [Reply1], [Reply2]... OR\nteach [react] [YourMessage] - [react1]... OR\nremove [YourMessage] OR\nrm [YourMessage] - [indexNumber] OR\nmsg [YourMessage] OR\nlist OR \nall OR\nedit [YourMessage] - [NewMessage]"
   }
