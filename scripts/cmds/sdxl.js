@@ -8,7 +8,7 @@ module.exports.config = {
   role: 0,
   author: "xrotick🥀",
   description: "Generate an AI image using SDXL Lightning API",
-  category: "𝐈𝐌𝐀𝐆𝐈𝐍𝐄",
+  category: "imagine",
   guide: "{pn} [prompt]\nExample: {pn} a futuristic city in the clouds",
   countDown: 10
 };
