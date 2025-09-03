@@ -43,7 +43,7 @@ module.exports = {
         description: {
             en: "Displays a detailed status card. Use -s to set your personal background."
         },
-        category: "general",
+        category: "group",
         guide: {
             en: "   {pn} [@tag/uid/reply]\n   {pn} -s background (reply to an image)\n   {pn} -s removebg"
         },
