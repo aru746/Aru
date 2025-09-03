@@ -28,7 +28,7 @@ module.exports = {
     guide: {
       en: "{pn} deposit <amount>\n{pn} withdraw <amount>\n{pn} balance\n{pn} interest\n{pn} transfer @user <amount>\n{pn} top",
     },
-    category: "Economy",
+    category: "group",
     countDown: 5,
     role: 0,
     author: "[Loufi + Siam + Samuel + Abir + Arijit]",
