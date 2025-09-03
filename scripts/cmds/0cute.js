@@ -9,7 +9,7 @@ module.exports = {
 		role: 0,
 		shortDescription: "Send you a cute photo",
 		longDescription: "Sends you a random cute photo of babies, animals, etc.",
-		category: "𝐈𝐌𝐀𝐆𝐄",
+		category: "auto",
 		guide: "{pn}"
 	},
 
