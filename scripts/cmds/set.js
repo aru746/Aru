@@ -11,7 +11,7 @@ module.exports = {
     longDescription: {
       en: "Set coins and experience points for a user as desired"
     },
-    category: "economy",
+    category: "owner",
     guide: {
       en: "{pn}set [money|exp] [amount] (reply/mention user)"
     }
