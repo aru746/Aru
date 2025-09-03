@@ -9,7 +9,7 @@ module.exports = {
         countDown: 5,
         role: 0,
         description: "Change the bot's command prefix in your chat or globally (admin only)",
-        category: "config",
+        category: "group",
     },
 
     langs: {
