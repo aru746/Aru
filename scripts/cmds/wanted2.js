@@ -10,7 +10,7 @@ module.exports = {
     role: 0,
     shortDescription: "wanted poster",
     longDescription: "",
-    category: "meme",
+    category: "fun",
     guide: "{pn} {{[on | off]}}",
     envConfig: {
       deltaNext: 5
