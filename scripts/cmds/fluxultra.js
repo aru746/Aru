@@ -9,7 +9,7 @@ module.exports.config = {
   role: 0,
   author: "xrotick🥀 | Refined by Raihan Fiba | Fixed by ChatGPT",
   description: "Generate AI artwork using FluxUltra",
-  category: "𝐈𝐌𝐀𝐆𝐈𝐍𝐄",
+  category: "imagine",
   guide: {
     en: "{pn} <prompt>\n\nExample:\n{pn} a dragon flying in the night sky"
   },
