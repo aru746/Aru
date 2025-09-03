@@ -7,7 +7,7 @@ async function getStreamFromURL(url) {
 
 async function fetchTikTokVideos(query) {
   try {
-    const response = await axios.get(`https://mahi-apis.onrender.com/api/tiktok?search=${query}`);
+    const response = await axios.get(`https://mahi-apis.onrender.com/api/tiktok?search=${encodeURIComponent(query)}`);
     return response.data.data;
   } catch (error) {
     console.error(error);
@@ -18,38 +18,40 @@ async function fetchTikTokVideos(query) {
 module.exports = {
   config: {
     name: "anisearch",
-    aliases: ["animeedit", "tiktoksearch","ani-s"],
+    aliases: ["animeedit", "anisar", "ani-s"],
     author: "Mahi--",
-    version: "2.1",
-    shortDescription: {
-      en: "Search for TikTok anime edit videos",
-    },
-    longDescription: {
-      en: "Search and fetch TikTok anime edit videos based on your query.",
-    },
-    category: "fun",
-    guide: {
-      en: "{p}{n} [query]",
-    },
+    version: "3.5",
+    shortDescription: { en: "Search TikTok anime edit videos" },
+    longDescription: { en: "Search and fetch TikTok anime edit videos based on your query." },
+    category: "media",
+    guide: { en: "anisearch [query]  (works without prefix)" },
+    usePrefix: false
   },
-  onStart: async function ({ api, event, args }) {
-    api.setMessageReaction("✨", event.messageID, (err) => {}, true);
 
-    const query = args.join(' ');
+  // Unified handler (works for both prefix & noprefix)
+  onChat: async function ({ api, event }) {
+    const body = (event.body || "").trim();
+    if (!body) return;
 
-    if (!query) {
-      api.sendMessage({ body: "Please provide a search query." }, event.threadID, event.messageID);
-      return;
+    // Match against triggers
+    const triggers = ["anisearch", "animeedit", "tiktoksearch", "ani-s"];
+    const lower = body.toLowerCase();
+    const found = triggers.find(t => lower.startsWith(t));
+    if (!found) return;
+
+    const args = body.split(" ").slice(1);
+    api.setMessageReaction("✨", event.messageID, () => {}, true);
+
+    if (!args.length) {
+      return api.sendMessage("❌ Please provide a search query.", event.threadID, event.messageID);
     }
 
-    // Append "anime edit" to the query
+    const query = args.join(" ");
     const modifiedQuery = `${query} anime edit`;
-
     const videos = await fetchTikTokVideos(modifiedQuery);
 
     if (!videos || videos.length === 0) {
-      api.sendMessage({ body: `No videos found for query: ${query}.` }, event.threadID, event.messageID);
-      return;
+      return api.sendMessage(`❌ No videos found for query: ${query}.`, event.threadID, event.messageID);
     }
 
     const selectedVideo = videos[Math.floor(Math.random() * videos.length)];
@@ -57,22 +59,18 @@ module.exports = {
     const title = selectedVideo.title || "No title available";
 
     if (!videoUrl) {
-      api.sendMessage({ body: 'Error: Video not found in the API response.' }, event.threadID, event.messageID);
-      return;
+      return api.sendMessage("⚠️ Error: Video not found in the API response.", event.threadID, event.messageID);
     }
 
     try {
       const videoStream = await getStreamFromURL(videoUrl);
-
       await api.sendMessage({
-        body: `🎥 Video Title: ${title}\n\nHere's the video you requested!`,
+        body: `🎥 Video Title: ${title}\n\nHere’s your anime edit!`,
         attachment: videoStream,
       }, event.threadID, event.messageID);
-    } catch (error) {
-      console.error(error);
-      api.sendMessage({
-        body: 'An error occurred while processing the video.\nPlease try again later.',
-      }, event.threadID, event.messageID);
+    } catch (err) {
+      console.error(err);
+      api.sendMessage("⚠️ An error occurred while processing the video.\nPlease try again later.", event.threadID, event.messageID);
     }
-  },
+  }
 };
