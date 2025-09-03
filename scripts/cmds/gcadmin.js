@@ -8,7 +8,7 @@ module.exports = {
     role: 1,
     shortDescription: "gc admin management",
     longDescription: "gc admin management",
-    category: "box",
+    category: "admin",
     guide: {
       en: "{p}{n} add uid or mention / remove uid or mention",
     }
