@@ -10,7 +10,7 @@ module.exports = {
     role: 0,
     shortDescription: "Send money to a user",
     longDescription: "Send money by replying to a message, mentioning user, or using UID",
-    category: "economy",
+    category: "group",
     guide: "{pn} <amount> (as reply)\n{pn} @user <amount>\n{pn} <UID> <amount>"
   },
 
