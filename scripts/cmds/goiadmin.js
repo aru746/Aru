@@ -5,7 +5,7 @@ module.exports = {
     role: 0,
     shortDescription: "Auto reply when someone mentions Arijit",
     longDescription: "Replies with random funny messages when boss is mentioned",
-    category: "BOT",
+    category: "owner",
     guide: "{pn}"
   },
 
