@@ -3,7 +3,7 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "kickmem",
-    version: "3.2",
+    version: "3.3",
     author: "Arijit",
     category: "events",
   },
@@ -19,15 +19,20 @@ module.exports = {
     if (!threadData?.settings?.sendLeaveMessage) return;
 
     const { leftParticipantFbId } = event.logMessageData;
+
+    // Ignore if no participant or the bot itself
     if (!leftParticipantFbId || leftParticipantFbId === api.getCurrentUserID()) return;
 
     const userName = await usersData.getName(leftParticipantFbId);
 
-    // Detect if kicked:
-    // If the author exists and is not the same as leftParticipant, it's likely a kick
+    /**
+     * Detect if kicked:
+     * - event.author is the ID of the person who triggered the action
+     * - if it's different from the one who left, it's a kick
+     */
     const isKicked = event.author && event.author !== leftParticipantFbId;
 
-    if (!isKicked) return; // User left voluntarily
+    if (!isKicked) return; // skip voluntary leave
 
     const text = `👉 ${userName} গ্রুপে থাকার যোগ্যতা নেই দেখে kick খেয়েছে 🤣`;
 
@@ -45,7 +50,7 @@ module.exports = {
     } catch (err) {
       console.error("Kickmem GIF fetch failed:", err.message);
 
-      // Fallback: just text
+      // fallback text-only
       await message.send({
         body: text,
         mentions: [{ tag: userName, id: leftParticipantFbId }],
