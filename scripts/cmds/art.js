@@ -14,7 +14,7 @@ module.exports = {
     author: "Nazrul",
     role: 0,
     description: "{pn} - Enhance your photos with artful transformations!",
-    category: "art",
+    category: "image",
     countDown: 5,
     guide: { 
       en: "{pn} reply to an image"
