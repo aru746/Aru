@@ -13,7 +13,7 @@ module.exports.config = {
   role: 0,
   author: "Dipto",
   description: "Generate a Facebook cover",
-  category: "Cover",
+  category: "image",
   guide: {
     en: "fbcover v1/v2/v3 - name - title - address - email - phone - color (default = white)"
   },
