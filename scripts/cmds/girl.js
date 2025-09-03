@@ -10,7 +10,7 @@ module.exports = {
     role: 2, // 🔒 Only bot admins
     shortDescription: "Send a random girl photo (Admin only + Security Key)",
     longDescription: "Sends a random girl image from a large collection. Admins only + Requires security key.",
-    category: "18+",
+    category: "image",
     guide: "{pn} 2005"
   },
 
