@@ -1,4 +1,3 @@
-Command executed successfully:
 const { createCanvas, loadImage, registerFont } = require("canvas");
 const axios = require("axios");
 const fs = require("fs-extra");
