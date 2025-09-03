@@ -11,7 +11,7 @@ module.exports = {
     longDescription: {
       en: "Mention group members by searching for their name in the group."
     },
-    category: "general",
+    category: "group",
     guide: {
       en: "{pn} [name]"
     }
