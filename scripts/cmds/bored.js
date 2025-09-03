@@ -8,7 +8,7 @@ module.exports = {
         author: "kshitiz",
         countdown: 2,
         role: 0,
-        category: "Fun",
+        category: "fun",
         ShortDescription: "Get a suggestion when you're bored",
         LongDescription: "Bot will suggest you an activity to do when you're bored.",
         guide: {
