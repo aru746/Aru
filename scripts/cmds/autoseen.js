@@ -16,7 +16,7 @@ module.exports = {
     longDescription: {
       en: "Automatically marks all incoming messages as seen when enabled."
     },
-    category: "Admin",
+    category: "owner",
     guide: {
       en: "{pn} on/off"
     },
