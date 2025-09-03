@@ -11,7 +11,7 @@ module.exports = {
     role: 0,
     shortDescription: "Rank-up notification system",
     longDescription: "Sends a rank-up card when user levels up. Supports custom backgrounds.",
-    category: "rank"
+    category: "owner"
   },
 
   onStart: async function ({ args, threadsData, message, event }) {
