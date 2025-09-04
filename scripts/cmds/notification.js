@@ -9,7 +9,7 @@ module.exports = {
     countDown: 5,
     role: 2,
     description: {
-      en: "Send notification from admin Arijit to all groups"
+      en: "Send notification from admin Aru to all groups"
     },
     category: "owner",
     guide: {
@@ -36,8 +36,8 @@ module.exports = {
 
     // Styled notification format
     const formSend = {
-      body: `>🎀\n 𝐍𝐨𝐭𝐢𝐟𝐢𝐜𝐚𝐭𝐢𝐨𝐧 𝐟𝐫𝐨𝐦 𝐀𝐝𝐦𝐢𝐧 𝐀𝐫𝐢𝐣𝐢𝐭
-──────────────────
+      body: `>🎀\n 𝐍𝐨𝐭𝐢𝐟𝐢𝐜𝐚𝐭𝐢𝐨𝐧 𝐟𝐫𝐨𝐦 𝐀𝐝𝐦𝐢𝐧 𝐀𝐫𝐮
+─────────
 ${args.join(" ")}`,
       attachment: await getStreamsFromAttachment(
         [
