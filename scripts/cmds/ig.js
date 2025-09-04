@@ -6,7 +6,7 @@ module.exports = {
   config: {
     name: "ig",
     version: "2.0",
-    author: "ＡＲＩＪＩＴ ᶻ 𝗓 𐰁",
+    author: "N I R O Bᶻ 𝗓 𐰁",
     countDown: 5,
     role: 0,
     shortDescription: "বাংলা নোট + ছবি",
@@ -22,7 +22,7 @@ module.exports = {
 
   onChat: async function ({ api, event }) {
     const body = event.body?.toLowerCase().trim();
-    if (body === "/" || body === "ig") {
+    if (body === "ig" || body === "ig") {
       return sendQuoteWithImage(api, event);
     }
   }
