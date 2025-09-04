@@ -27,7 +27,6 @@ module.exports = {
         "A": "𝐀", "B": "𝐁", "C": "𝐂", "D": "𝐃", "E": "𝐄", "F": "𝐅", "G": "𝐆", "H": "𝐇", "I": "𝐈", "J": "𝐉",
         "K": "𝐊", "L": "𝐋", "M": "𝐌", "N": "𝐍", "O": "𝐎", "P": "𝐏", "Q": "𝐐", "R": "𝐑", "S": "𝐒", "T": "𝐓",
         "U": "𝐔", "V": "𝐕", "W": "𝐖", "X": "𝐗", "Y": "𝐘", "Z": "𝐙",
-        "0": "𝟎", "1": "𝟏", "2": "𝟐", "3": "𝟑", "4": "𝟒", "5": "𝟓", "6": "𝟔", "7": "𝟕", "8": "𝟖", "9": "𝟗",
         " ": " ", "'": "'", ",": ",", ".": ".", "-": "-", "!": "!", "?": "?"
       };
       return text.split('').map(char => boldAlphabet[char] || char).join('');
@@ -38,11 +37,11 @@ module.exports = {
       num = Number(num) || 0;
       const suffixes = ["", "K", "M", "B", "T", "Q", "QU", "S"];
       const tier = Math.floor(Math.log10(Math.abs(num || 1)) / 3);
-      if (tier === 0) return toBoldUnicode(num.toString()) + "＄";
+      if (tier === 0) return num.toString() + "$";
       const suffix = suffixes[tier] || "";
       const scale = Math.pow(10, tier * 3);
       const scaled = num / scale;
-      return toBoldUnicode(scaled.toFixed(1).replace(/\.0$/, '')) + toBoldUnicode(suffix) + "＄";
+      return scaled.toFixed(1).replace(/\.0$/, '') + suffix + "$";
     }
 
     const mentionIDs = Object.keys(event.mentions);
@@ -54,7 +53,7 @@ module.exports = {
         const name = event.mentions[uid].replace("@", "");
         const styledName = toBoldUnicode(name);
         const balance = await usersData.get(uid, "money") || 0;
-        reply += ` ${styledName}, 𝐛𝐚𝐥𝐚𝐧𝐜𝐞 𝐢𝐬: ${formatAmount(balance)}\n`;
+        reply += ` ${styledName}, 𝐛𝐚𝐥𝐚𝐧𝐜𝐞 𝐢𝐬: ${toBoldUnicode(formatAmount(balance))}\n`;
       }
       return message.reply(reply.trim());
     }
@@ -65,12 +64,12 @@ module.exports = {
       const name = await usersData.getName(uid);
       const styledName = toBoldUnicode(name);
       const balance = await usersData.get(uid, "money") || 0;
-      return message.reply(` ${styledName}, 𝐛𝐚𝐥𝐚𝐧𝐜𝐞 𝐢𝐬: ${formatAmount(balance)}`);
+      return message.reply(` ${styledName}, 𝐛𝐚𝐥𝐚𝐧𝐜𝐞 𝐢𝐬: ${toBoldUnicode(formatAmount(balance))}`);
     }
 
     // ✅ Default self balance
     const selfData = await usersData.get(event.senderID);
     const selfBalance = selfData?.money || 0;
-    return message.reply(`${toBoldUnicode("Baby, Your balance:")} ${formatAmount(selfBalance)}`);
+    return message.reply(`${toBoldUnicode("Baby, Your balance:")} ${toBoldUnicode(formatAmount(selfBalance))}`);
   }
 };
