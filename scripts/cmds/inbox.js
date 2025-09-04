@@ -6,7 +6,7 @@ module.exports = {
     author: "MahMUD",
     countDown: 5,
     role: 0,
-    category: "system"
+    category: "general"
   },
   onStart: async function({ api, event, args, message }) {
     try {
