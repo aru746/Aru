@@ -104,7 +104,7 @@ module.exports = {
         role: 0,
         shortDescription: "Download and send audio from YouTube.",
         longDescription: "Download audio from YouTube based on a query or attachment.",
-        category: "music",
+        category: "media",
         guide: "{p}song [query] or reply to a video/audio attachment",
         envConfig: {
             noPrefix: true // Add this line to enable no-prefix option
