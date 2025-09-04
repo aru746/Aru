@@ -10,7 +10,7 @@ module.exports = {
 		role: 0,
 		shortDescription: "no prefix",
 		longDescription: "no prefix",
-		category: "no prefix",
+		category: "auto",
 	},
 	onStart: async function () { },
 	onChat: async function ({ event, message }) {
