@@ -7,12 +7,12 @@ const mahmhd = async () => {
 
 module.exports = {
   config: {
-    name: "birthday",
+    name: "wish",
     aliases: ["wish"],
     version: "1.7",
     role: 0,
     author: "MahMUD",
-    category: "love",
+    category: "group",
     countDown: 5,
     guide: { en: "{p}{n} @mention" },
   },
