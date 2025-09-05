@@ -3,8 +3,8 @@ const { removeHomeDir, log } = global.utils;
 module.exports = {
   config: {
     name: "eval",
-    version: "1.9",
-    author: "NTKhang",
+    version: "2.0",
+    author: "NTKhang | Fixed by Arijit",
     countDown: 5,
     role: 2,
     description: {
@@ -37,17 +37,24 @@ module.exports = {
     }
 
     function output(msg) {
-      if (typeof msg == "number" || typeof msg == "boolean" || typeof msg == "function")
+      if (typeof msg === "number" || typeof msg === "boolean" || typeof msg === "function") {
         msg = msg.toString();
+      }
       else if (msg instanceof Map) {
         let text = `Map(${msg.size}) `;
         text += JSON.stringify(mapToObj(msg), null, 2);
         msg = text;
       }
-      else if (typeof msg == "object")
-        msg = JSON.stringify(msg, null, 2);
-      else if (typeof msg == "undefined")
+      else if (typeof msg === "object" && msg !== null) {
+        try {
+          msg = JSON.stringify(msg, null, 2);
+        } catch {
+          msg = String(msg);
+        }
+      }
+      else if (typeof msg === "undefined") {
         msg = "undefined";
+      }
 
       message.reply(msg);
     }
@@ -58,29 +65,41 @@ module.exports = {
 
     function mapToObj(map) {
       const obj = {};
-      map.forEach(function (v, k) {
+      map.forEach((v, k) => {
         obj[k] = v;
       });
       return obj;
     }
 
+    const code = args.join(" ");
     const cmd = `
-    (async () => {
-      try {
-        ${args.join(" ")}
-      }
-      catch(err) {
-        log.err("eval command", err);
-        message.send(
-          "${getLang("error")}\\n" +
-          (err.stack ?
-            removeHomeDir(err.stack) :
-            removeHomeDir(JSON.stringify(err, null, 2) || "")
-          )
-        );
-      }
-    })()`;
+      (async () => {
+        try {
+          ${code}
+        } catch (err) {
+          log.err("eval command", err);
+          message.reply(
+            "${getLang("error")}\\n" +
+            (err?.stack
+              ? removeHomeDir(err.stack)
+              : removeHomeDir(JSON.stringify(err, null, 2) || String(err))
+            )
+          );
+        }
+      })()
+    `;
 
-    eval(cmd);
+    try {
+      eval(cmd);
+    } catch (err) {
+      log.err("eval command", err);
+      message.reply(
+        getLang("error") + "\n" +
+        (err?.stack
+          ? removeHomeDir(err.stack)
+          : removeHomeDir(JSON.stringify(err, null, 2) || String(err))
+        )
+      );
+    }
   }
 };
