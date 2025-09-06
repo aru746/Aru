@@ -63,19 +63,19 @@ function generateResult() {
   const slots = ["💚", "💛", "💙", "💜", "🤎", "🤍", "❤"];
   const r = Math.random() * 100;
 
-  if (r < 2) return ["❤", "❤", "❤"]; // 2% Jackpot (10x)
-  if (r < 10) { // Next 8% for 5x win
+  if (r < 2) return ["❤", "❤", "❤"]; // 1% Jackpot (10x)
+  if (r < 10) { // Next 10% for 5x win
     const symbol = slots.filter(e => e !== "❤")[Math.floor(Math.random() * 6)];
     return [symbol, symbol, symbol];
   }
-  if (r < 45) { // Next 35% for 3x win (two same)
+  if (r < 45) { // Next 44% for 3x win (two same)
     const s = slots[Math.floor(Math.random() * slots.length)];
     let r2;
     do { r2 = slots[Math.floor(Math.random() * slots.length)]; } while (r2 === s);
     return [s, s, r2];
   }
 
-  // 55% Loss (all different)
+  // 45% Loss (all different)
   while (true) {
     const [a, b, c] = [randomEmoji(slots), randomEmoji(slots), randomEmoji(slots)];
     if (a !== b && b !== c && a !== c) return [a, b, c];
