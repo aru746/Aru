@@ -3,8 +3,8 @@ const { removeHomeDir, log } = global.utils;
 module.exports = {
   config: {
     name: "eval",
-    version: "2.0",
-    author: "NTKhang | Fixed by Arijit",
+    version: "2.1",
+    author: "NTKhang",
     countDown: 5,
     role: 2,
     description: {
@@ -72,29 +72,19 @@ module.exports = {
     }
 
     const code = args.join(" ");
-    const cmd = `
-      (async () => {
-        try {
-          ${code}
-        } catch (err) {
-          log.err("eval command", err);
-          message.reply(
-            "${getLang("error")}\\n" +
-            (err?.stack
-              ? removeHomeDir(err.stack)
-              : removeHomeDir(JSON.stringify(err, null, 2) || String(err))
-            )
-          );
-        }
-      })()
-    `;
+    if (!code) {
+      return message.reply("⚠️ Please provide some code to evaluate!");
+    }
 
     try {
-      eval(cmd);
+      const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+      const func = new AsyncFunction("message", "event", "args", "output", "out", "log", "removeHomeDir", "mapToObj", code);
+
+      await func(message, event, args, output, out, log, removeHomeDir, mapToObj);
     } catch (err) {
       log.err("eval command", err);
       message.reply(
-        getLang("error") + "\n" +
+        `${getLang("error")}\n` +
         (err?.stack
           ? removeHomeDir(err.stack)
           : removeHomeDir(JSON.stringify(err, null, 2) || String(err))
