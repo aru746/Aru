@@ -3,7 +3,7 @@ const { getExtFromUrl, drive, getStreamFromURL } = global.utils;
 module.exports = {
 	config: {
 		name: 'shortcut',
-		aliases: ['short'],
+		aliases: ['srt'],
 		version: '1.14',
 		author: 'NTKhang',
 		countDown: 5,
