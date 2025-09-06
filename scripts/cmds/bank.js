@@ -144,7 +144,7 @@ module.exports = {
         const senderName = await usersData.get(userID, "name") || "Unknown";
         const recipientName = await usersData.get(recipientUID, "name") || "Unknown";
 
-        return message.reply(`✅ ${toBoldUnicode(senderName)} 𝗧𝗿𝗮𝗻𝘀𝗳𝗲𝗿𝗿𝗲𝗱 $${formatNumberWithFullForm(amount)} 𝘁𝗼 ${toBoldUnicode(recipientName)}.`);
+        return message.reply(`✅ ${toBoldUnicode(senderName)} 𝐓𝐫𝐚𝐧𝐬𝐟𝐞𝐫𝐫𝐞𝐝 $${formatNumberWithFullForm(amount)} 𝐭𝐨 ${toBoldUnicode(recipientName)}.`);
       }
 
       // Top leaderboard
