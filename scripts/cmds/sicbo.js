@@ -73,7 +73,7 @@ module.exports = {
     }
     const resultString = results.join(" | ");
 
-    const winRates = { big: 0.25, small: 0.40 };
+    const winRates = { big: 0.45, small: 0.55 };
     const isWin = Math.random() < winRates[betType];
 
     if (isWin) {
