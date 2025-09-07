@@ -48,22 +48,22 @@ module.exports = {
 
     // --- Game logic ---
     if (!["small", "big"].includes(betType)) {
-      return message.reply("🙊 | Choose 'small' or 'big'.");
+      return message.reply("🙊 | 𝐂𝐡𝐨𝐨𝐬𝐞 '𝐬𝐦𝐚𝐥𝐥' 𝐨𝐫 '𝐛𝐢𝐠'.");
     }
 
     if (!Number.isInteger(betAmount) || betAmount < 50) {
-      return message.reply("❌ | Please bet an amount of 50 or more.");
+      return message.reply("❌ | 𝐏𝐥𝐞𝐚𝐬𝐞 𝐛𝐞𝐭 𝐚𝐧 𝐚𝐦𝐨𝐮𝐧𝐭 𝐨𝐟 50 𝐨𝐫 𝐦𝐨𝐫𝐞.");
     }
 
     if (betType === "big" && betAmount > 100_000_000) {
-      return message.reply("⚠️ | Maximum bet for 'Big' is 100,000,000.");
+      return message.reply("⚠️ | 𝐌𝐚𝐱𝐢𝐦𝐮𝐦 𝐛𝐞𝐭 𝐟𝐨𝐫 '𝐁𝐢𝐠' 𝐢𝐬 100,000,000.");
     }
     if (betType === "small" && betAmount > 10_000_000) {
-      return message.reply("⚠️ | Maximum bet for 'Small' is 10,000,000.");
+      return message.reply("⚠️ | 𝐌𝐚𝐱𝐢𝐦𝐮𝐦 𝐛𝐞𝐭 𝐟𝐨𝐫 '𝐒𝐦𝐚𝐥𝐥' 𝐢𝐬 10,000,000.");
     }
 
     if (betAmount > userData.money) {
-      return message.reply("❌ | You don't have enough money to make that bet.");
+      return message.reply("❌ | 𝐘𝐨𝐮 𝐝𝐨𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐞𝐧𝐨𝐮𝐠𝐡 𝐦𝐨𝐧𝐞𝐲 𝐭𝐨 𝐦𝐚𝐤𝐞 𝐭𝐡𝐚𝐭 𝐛𝐞𝐭.");
     }
 
     const dice = [1, 2, 3, 4, 5, 6];
@@ -73,7 +73,7 @@ module.exports = {
     }
     const resultString = results.join(" | ");
 
-    const winRates = { big: 0.45, small: 0.55 };
+    const winRates = { big: 0.35, small: 0.45 };
     const isWin = Math.random() < winRates[betType];
 
     if (isWin) {
@@ -81,13 +81,13 @@ module.exports = {
       userData.money += winAmount;
       await usersData.set(user, userData);
       return message.reply(
-        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n🎉 | Congratulations! You won ${winAmount.toLocaleString()}!`
+        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n🎉 | 𝐂𝐨𝐧𝐠𝐫𝐚𝐭𝐮𝐥𝐚𝐭𝐢𝐨𝐧𝐬! 𝐘𝐨𝐮 𝐰𝐨𝐧 ${winAmount.toLocaleString()}!`
       );
     } else {
       userData.money -= betAmount;
       await usersData.set(user, userData);
       return message.reply(
-        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n😿 | You lost ${betAmount.toLocaleString()}.`
+        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n😿 | 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 ${betAmount.toLocaleString()}.`
       );
     }
   }
