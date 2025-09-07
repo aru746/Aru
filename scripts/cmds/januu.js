@@ -4,11 +4,10 @@ const mahmuds =
   ["baby",
    "babu",
    "bbu",
-   "jan",
+   "janu",
    "bot",
    "জান",
    "বেবি",
-"alya",
 
   ]; 
 
