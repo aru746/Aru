@@ -9,7 +9,7 @@ module.exports = {
 			vi: "Xem bảng xếp hạng người dùng giàu nhất dưới dạng ảnh.",
 			en: "View the top richest users leaderboard as an image."
 		},
-		category: "economy",
+		category: "group",
 		guide: {
 			vi: "{pn}",
 			en: "{pn}"
