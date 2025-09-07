@@ -116,7 +116,7 @@ module.exports = {
       // Title
       ctx.fillStyle = "#2c2c54";
       ctx.font = "bold 42px Sans";
-      ctx.fillText("╭─⭓🎂| 𝗕𝗶𝗿𝘁𝗵𝗱𝗮𝘆 𝗟𝗶𝘀𝘁 :", 60, 80);
+      ctx.fillText("🎂| 𝗕𝗶𝗿𝘁𝗵𝗱𝗮𝘆 𝗟𝗶𝘀𝘁 :", 60, 80);
 
       let y = 150;
       for (let i = 0; i < birthdays.length; i++) {
@@ -147,7 +147,7 @@ module.exports = {
       // Footer line
       ctx.fillStyle = "#2c2c54";
       ctx.font = "bold 28px Monospace";
-      ctx.fillText("╰─────────⭓", 80, y);
+      ctx.fillText("", 80, y);
 
       // Save & send
       const imgPath = path.join(__dirname, "birthday_list_card.png");
