@@ -8,6 +8,7 @@ const mahmuds =
    "bot",
    "জান",
    "বেবি",
+   "alya",
 
   ]; 
 
