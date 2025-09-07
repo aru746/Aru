@@ -1,237 +1,114 @@
-const fs = require('fs').promises;
-const path = require('path');
-const { getStreamsFromAttachment, log } = global.utils;
-const mediaTypes = ["photo", 'png', "animated_image", "video", "audio"];
-const { config } = global.GoatBot;
-const { client } = global;
+const fs = require("fs-extra");
+const path = require("path");
 
 module.exports = {
-    config: {
-        name: "vip",
-        version: "1.0",
-        author: "Kshitiz",
-        countDown: 5,
-        role: 0,
-        shortDescription: {
-            vi: "",
-            en: "handle vip members"
-        },
-        longDescription: {
-            vi: "",
-            en: "handle vip members"
-        },
-        category: "admin",
-        guide: {
-            vi: "",
-            en: "{p} vip <message> to sent msg to vip user\n{p} vip add {uid} \n {p} vip remove {uid} \n {p} vip list"
-        }
-    },
-
-    langs: {
-        vi: {
-
-        },
-        en: {
-            missingMessage: "❌ 𝘆𝗼𝘂 𝗻𝗲𝗲𝗱 𝘁𝗼 𝗯𝗲 𝘃𝗶𝗽 𝗺𝗲𝗺𝗯𝗲𝗿 𝘁𝗼 𝘂𝘀𝗲 𝘁𝗵𝗶𝘀 𝗳𝗲𝗮𝘁𝘂𝗿𝗲.",
-            sendByGroup: "\n- Sent from group: %1\n- Thread ID: %2",
-            sendByUser: "\n- Sent from user",
-            content: "\n\n𝗖𝗼𝗻𝘁𝗲𝗻𝘁:%1\nReply this message to send message",
-            success: "✅ 𝗦𝗲𝗻𝘁 𝘆𝗼𝘂𝗿 𝗺𝗲𝘀𝘀𝗮𝗴𝗲 𝘁𝗼 𝗩𝗜𝗣 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆!\n%2",
-            failed: "⭕ 𝗔𝗻 𝗲𝗿𝗿𝗼𝗿 𝗼𝗰𝗰𝘂𝗿𝗿𝗲𝗱 𝘄𝗵𝗶𝗹𝗲 𝘀𝗲𝗻𝗱𝗶𝗻𝗴 𝘆𝗼𝘂𝗿 𝗺𝗲𝘀𝘀𝗮𝗴𝗲 𝘁𝗼 𝗩𝗜𝗣\n%2\nCheck console for more details",
-            reply: "📍 𝗥𝗲𝗽𝗹𝘆 𝗳𝗿𝗼𝗺 𝗩𝗜𝗣 %1:\n%2",
-            replySuccess: "✅ 𝗦𝗲𝗻𝘁 𝘆𝗼𝘂𝗿 𝗿𝗲𝗽𝗹𝘆 𝘁𝗼 𝗩𝗜𝗣 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆!",
-            feedback: "📝 𝗙𝗲𝗲𝗱𝗯𝗮𝗰𝗸 𝗳𝗿𝗼𝗺 𝗩𝗜𝗣 𝘂𝘀𝗲𝗿 %1:\n- User ID: %2\n%3\n\n𝗖𝗼𝗻𝘁𝗲𝗻𝘁:%4",
-            replyUserSuccess: "✅ 𝗦𝗲𝗻𝘁 𝘆𝗼𝘂𝗿 𝗿𝗲𝗽𝗹𝘆 𝘁𝗼 𝗩𝗜𝗣 𝘂𝘀𝗲𝗿 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆!",
-            noAdmin: "🚫 𝗬𝗼𝘂 𝗱𝗼𝗻'𝘁 𝗵𝗮𝘃𝗲 𝗽𝗲𝗿𝗺𝗶𝘀𝘀𝗶𝗼𝗻 𝘁𝗼 𝗽𝗲𝗿𝗳𝗼𝗿𝗺 𝘁𝗵𝗶𝘀 𝗮𝗰𝘁𝗶𝗼𝗻.",
-            addSuccess: "✅ 𝗠𝗲𝗺𝗯𝗲𝗿 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗮𝗱𝗱𝗲𝗱 𝘁𝗼 𝘁𝗵𝗲 𝗩𝗜𝗣 𝗹𝗶𝘀𝘁!",
-            alreadyInVIP: "🏅 𝗠𝗲𝗺𝗯𝗲𝗿 𝗶𝘀 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗶𝗻 𝘁𝗵𝗲 𝗩𝗜𝗣 𝗹𝗶𝘀𝘁!",
-            removeSuccess: "𝗠𝗲𝗺𝗯𝗲𝗿 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗿𝗲𝗺𝗼𝘃𝗲𝗱 𝗳𝗿𝗼𝗺 𝘁𝗵𝗲 𝗩𝗜𝗣 𝗹𝗶𝘀𝘁!",
-            notInVIP: "❌ 𝗠𝗲𝗺𝗯𝗲𝗿 𝗶𝘀 𝗻𝗼𝘁 𝗶𝗻 𝘁𝗵𝗲 𝗩𝗜𝗣 𝗹𝗶𝘀𝘁!",
-            list: "👑 | 𝗩𝗶𝗽 𝗺𝗲𝗺𝗯𝗲𝗿𝘀 𝗹𝗶𝘀𝘁:\n%1",
-            vipModeEnabled: "✅ 𝗩𝗶𝗽 𝗺𝗼𝗱𝗲 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗲𝗻𝗮𝗯𝗹𝗲𝗱",
-            vipModeDisabled: "❌ 𝗩𝗶𝗽 𝗺𝗼𝗱𝗲 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗱𝗶𝘀𝗮𝗯𝗹𝗲𝗱"
-        }
-    },
-
-    onStart: async function ({ args, message, event, usersData, threadsData, api, commandName, getLang }) {
-        const vipDataPath = path.join(__dirname, 'vip.json'); 
-        const { senderID, threadID, isGroup } = event;
-
-        if (!config.adminBot.includes(senderID)) {
-            return message.reply(getLang("noAdmin"));
-        }
-
-        if (args[0] === 'on') {
-            try {
-                config.whiteListMode.enable = true;
-                const vipData = await fs.readFile(vipDataPath).then(data => JSON.parse(data)).catch(() => ({}));
-                if (!vipData.permission) {
-                    vipData.permission = [];
-                }
-                config.whiteListMode.whiteListIds = vipData.permission; 
-                await fs.writeFile(client.dirConfig, JSON.stringify(config, null, 2));
-                return message.reply(getLang("vipModeEnabled"));
-            } catch (error) {
-                console.error("Error enabling VIP mode:", error);
-                return message.reply("An error occurred while enabling VIP mode.");
-            }
-        } else if (args[0] === 'off') {
-            try {
-                config.whiteListMode.enable = false;
-                await fs.writeFile(client.dirConfig, JSON.stringify(config, null, 2));
-                return message.reply(getLang("vipModeDisabled"));
-            } catch (error) {
-                console.error("Error disabling VIP mode:", error);
-                return message.reply("An error occurred while disabling VIP mode.");
-            }
-        }
-
-        
-        if (args[0] === 'add' && args.length === 2) {
-            const userId = args[1];
-            const vipData = await fs.readFile(vipDataPath).then(data => JSON.parse(data)).catch(() => ({}));
-            if (!vipData.permission) {
-                vipData.permission = [];
-            }
-            if (!vipData.permission.includes(userId)) {
-                vipData.permission.push(userId);
-                await fs.writeFile(vipDataPath, JSON.stringify(vipData, null, 2));
-                return message.reply(getLang("addSuccess"));
-            } else {
-                return message.reply(getLang("alreadyInVIP"));
-            }
-        } else if (args[0] === 'remove' && args.length === 2) {
-            const userId = args[1];
-            const vipData = await fs.readFile(vipDataPath).then(data => JSON.parse(data)).catch(() => ({}));
-            if (!vipData.permission) {
-                vipData.permission = [];
-            }
-            if (vipData.permission.includes(userId)) {
-                vipData.permission = vipData.permission.filter(id => id !== userId);
-                await fs.writeFile(vipDataPath, JSON.stringify(vipData, null, 2));
-                return message.reply(getLang("removeSuccess"));
-            } else {
-                return message.reply(getLang("notInVIP"));
-            }
-        } else if (args[0] === 'list') {
-            const vipData = await fs.readFile(vipDataPath).then(data => JSON.parse(data)).catch(() => ({}));
-            const vipList = vipData.permission ? await Promise.all(vipData.permission.map(async id => {
-                const name = await usersData.getName(id);
-                return `${id}-(${name})`;
-            })) : '';
-            return message.reply(getLang("list", vipList.join('\n') || ''));
-        } else if (!config.whiteListMode.enable) {
-          
-            return message.reply("Turn on Vip mode to send msg to vip members.");
-        }
-
-     
-        const vipData = await fs.readFile(vipDataPath).then(data => JSON.parse(data)).catch(() => ({}));
-        if (!vipData.permission || !vipData.permission.includes(senderID)) {
-            return message.reply(getLang("missingMessage"));
-        }
-
-        if (!args[0]) {
-            return message.reply(getLang("missingMessage"));
-        }
-
-        const senderName = await usersData.getName(senderID);
-        const msg = "==📨️ VIP MESSAGE 📨️=="
-            + `\n- User Name: ${senderName}`
-            + `\n- User ID: ${senderID}`
-
-        const formMessage = {
-            body: msg + getLang("content", args.join(" ")),
-            mentions: [{
-                id: senderID,
-                tag: senderName
-            }],
-            attachment: await getStreamsFromAttachment(
-                [...event.attachments, ...(event.messageReply?.attachments || [])]
-                    .filter(item => mediaTypes.includes(item.type))
-            )
-        };
-
-        try {
-            const messageSend = await api.sendMessage(formMessage, threadID);
-            global.GoatBot.onReply.set(messageSend.messageID, {
-                commandName,
-                messageID: messageSend.messageID,
-                threadID,
-                messageIDSender: event.messageID,
-                type: "userCallAdmin"
-            });
-        } catch (error) {
-            console.error("Error sending message to VIP:", error);
-            return message.reply(getLang("failed"));
-        }
-    },
-    onReply: async ({ args, event, api, message, Reply, usersData, commandName, getLang }) => {
-        const { type, threadID, messageIDSender } = Reply;
-        const senderName = await usersData.getName(event.senderID);
-        const { isGroup } = event;
-
-        switch (type) {
-            case "userCallAdmin": {
-                const formMessage = {
-                    body: getLang("reply", senderName, args.join(" ")),
-                    mentions: [{
-                        id: event.senderID,
-                        tag: senderName
-                    }],
-                    attachment: await getStreamsFromAttachment(
-                        event.attachments.filter(item => mediaTypes.includes(item.type))
-                    )
-                };
-
-                api.sendMessage(formMessage, threadID, (err, info) => {
-                    if (err)
-                        return message.err(err);
-                    message.reply(getLang("replyUserSuccess"));
-                    global.GoatBot.onReply.set(info.messageID, {
-                        commandName,
-                        messageID: info.messageID,
-                        messageIDSender: event.messageID,
-                        threadID: event.threadID,
-                        type: "adminReply"
-                    });
-                }, messageIDSender);
-                break;
-            }
-            case "adminReply": {
-                let sendByGroup = "";
-                if (isGroup) {
-                    const { threadName } = await api.getThreadInfo(event.threadID);
-                    sendByGroup = getLang("sendByGroup", threadName, event.threadID);
-                }
-                const formMessage = {
-                    body: getLang("feedback", senderName, event.senderID, sendByGroup, args.join(" ")),
-                    mentions: [{
-                        id: event.senderID,
-                        tag: senderName
-                    }],
-                    attachment: await getStreamsFromAttachment(
-                        event.attachments.filter(item => mediaTypes.includes(item.type))
-                    )
-                };
-
-                api.sendMessage(formMessage, threadID, (err, info) => {
-                    if (err)
-                        return message.err(err);
-                    message.reply(getLang("replySuccess"));
-                    global.GoatBot.onReply.set(info.messageID, {
-                        commandName,
-                        messageID: info.messageID,
-                        messageIDSender: event.messageID,
-                        threadID: event.threadID,
-                        type: "userCallAdmin"
-                    });
-                }, messageIDSender);
-                break;
-            }
-            default: {
-                break;
-            }
-        }
+  config: {
+    name: "vip",
+    version: "4.0",
+    author: "Arijit",
+    countDown: 5,
+    role: 2,
+    shortDescription: "Manage VIP users",
+    longDescription: "Add, remove, and list VIP users with expiration dates",
+    category: "system",
+    guide: {
+      en: "{pn} add <uid> <days>\n{pn} add <uid> 0 (Permanent)\n{pn} remove <uid>\n{pn} list"
     }
+  },
+
+  onStart: async function ({ message, args, usersData }) {
+    const vipDataPath = path.join(__dirname, "vipData.json");
+    if (!fs.existsSync(vipDataPath)) {
+      fs.writeFileSync(vipDataPath, JSON.stringify({ permission: [] }, null, 2));
+    }
+    const vipData = JSON.parse(fs.readFileSync(vipDataPath));
+
+    // Unicode bold converter
+    function toBoldUnicode(name) {
+      const boldAlphabet = {
+        "a": "𝐚","b": "𝐛","c": "𝐜","d": "𝐝","e": "𝐞","f": "𝐟","g": "𝐠","h": "𝐡","i": "𝐢","j": "𝐣",
+        "k": "𝐤","l": "𝐥","m": "𝐦","n": "𝐧","o": "𝐨","p": "𝐩","q": "𝐪","r": "𝐫","s": "𝐬","t": "𝐭",
+        "u": "𝐮","v": "𝐯","w": "𝐰","x": "𝐱","y": "𝐲","z": "𝐳","A": "𝐀","B": "𝐁","C": "𝐂","D": "𝐃",
+        "E": "𝐄","F": "𝐅","G": "𝐆","H": "𝐇","I": "𝐈","J": "𝐉","K": "𝐊","L": "𝐋","M": "𝐌","N": "𝐍",
+        "O": "𝐎","P": "𝐏","Q": "𝐐","R": "𝐑","S": "𝐒","T": "𝐓","U": "𝐔","V": "𝐕","W": "𝐖","X": "𝐗",
+        "Y": "𝐘","Z": "𝐙","0": "0","1": "1","2": "2","3": "3","4": "4","5": "5","6": "6","7": "7","8": "8",
+        "9": "9"," ": " ","'": "'",",": ",",".": ".","-": "-","!": "!","?": "?"
+      };
+      return name.split("").map(char => boldAlphabet[char] || char).join("");
+    }
+
+    // --- ADD VIP ---
+    if (args[0] === "add") {
+      const uid = args[1];
+      if (!uid) return message.reply("❌ | Please provide a UID.");
+
+      let days = parseInt(args[2]);
+      let expireDate = null;
+      if (!isNaN(days)) {
+        if (days > 0) {
+          expireDate = Date.now() + days * 24 * 60 * 60 * 1000;
+        } else if (days === 0) {
+          expireDate = null; // Permanent
+        }
+      }
+
+      if (!vipData.permission.includes(uid)) {
+        vipData.permission.push(uid);
+      }
+
+      await usersData.set(uid, { vipExpire: expireDate }, { merge: true });
+      fs.writeFileSync(vipDataPath, JSON.stringify(vipData, null, 2));
+
+      const user = await usersData.get(uid);
+      const name = toBoldUnicode(user.name || uid);
+      const expStr = expireDate ? new Date(expireDate).toLocaleDateString("en-GB") : "Permanent";
+
+      return message.reply(`✅ | Added ${name} as VIP\n   └ 𝐄𝐱𝐩𝐢𝐫𝐞𝐬: ${expStr}`);
+    }
+
+    // --- REMOVE VIP ---
+    else if (args[0] === "remove") {
+      const uid = args[1];
+      if (!uid) return message.reply("❌ | Please provide a UID.");
+
+      vipData.permission = vipData.permission.filter(id => id !== uid);
+      await usersData.set(uid, { vipExpire: null }, { merge: true });
+      fs.writeFileSync(vipDataPath, JSON.stringify(vipData, null, 2));
+
+      return message.reply(`🗑️ | Removed UID ${uid} from VIP list.`);
+    }
+
+    // --- LIST VIPs ---
+    else if (args[0] === "list") {
+      if (!vipData.permission.length) return message.reply("👑 | No VIP users yet.");
+
+      // Auto-remove expired
+      const now = Date.now();
+      vipData.permission = vipData.permission.filter(id => {
+        const user = usersData.get(id);
+        return !(user && user.vipExpire && user.vipExpire < now);
+      });
+      fs.writeFileSync(vipDataPath, JSON.stringify(vipData, null, 2));
+
+      const vipList = await Promise.all(vipData.permission.map(async id => {
+        const user = await usersData.get(id);
+        const name = toBoldUnicode(user.name || id);
+        const expireDate = user.vipExpire ? new Date(user.vipExpire).toLocaleDateString("en-GB") : "Permanent";
+        return `• ${name}\n   └ 𝐄𝐱𝐩𝐢𝐫𝐞𝐬: ${expireDate}`;
+      }));
+
+      return message.reply(`👑 | 𝐕𝐈𝐏 𝐔𝐬𝐞𝐫𝐬 (${vipList.length})\n\n${vipList.join("\n\n")}`);
+    }
+
+    // --- HELP ---
+    else {
+      return message.reply(
+        "⚙️ | Usage:\n" +
+        "- vip add <uid> <days>\n" +
+        "- vip add <uid> 0 (Permanent)\n" +
+        "- vip remove <uid>\n" +
+        "- vip list"
+      );
+    }
+  }
 };
