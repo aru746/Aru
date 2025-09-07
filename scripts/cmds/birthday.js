@@ -128,14 +128,14 @@ module.exports = {
         ctx.shadowBlur = 6;
         ctx.fillStyle = "#000";
         ctx.font = "30px Sans";
-        ctx.fillText(`│╭‣ ${i + 1}. ${boldName}`, 80, y);
+        ctx.fillText(`╭‣ ${i + 1}. ${boldName}`, 80, y);
         ctx.shadowBlur = 0;
         y += 45;
 
         // Date (blue) + Zodiac (gold)
         ctx.fillStyle = "#1e3799";
         ctx.font = "24px Sans";
-        ctx.fillText(`│╰‣ 🎂 [ ${b.date} ]`, 80, y);
+        ctx.fillText(`╰‣ 🎂 [ ${b.date} ]`, 80, y);
 
         ctx.fillStyle = "#FFD700";
         ctx.font = "26px Sans";
