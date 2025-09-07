@@ -8,8 +8,8 @@ const baseApiUrl = async () => {
 };
  
 module.exports.config = {
-  name: "janu",
-  aliases: ["jann", "জান", "janu",],
+  name: "jan",
+  aliases: ["januu", "জান", "jan","alya"],
   version: "1.7",
   author: "MahMUD",
   countDown: 0,
@@ -38,6 +38,7 @@ module.exports.onStart = async ({ api, event, args, usersData }) => {
         "𝐛𝐨𝐥𝐨 𝐛𝐚𝐛𝐲🐥",
         "𝐡𝐞𝐥𝐥𝐨 𝐛𝐚𝐛𝐲🐤",
         "𝐇𝐮𝐦𝐦 𝐛𝐨𝐥𝐨😗",
+        "𝐌𝐢𝐥𝐚𝐬𝐡𝐤𝐚🥹",
       ];
       return api.sendMessage(
         responses[Math.floor(Math.random() * responses.length)],
