@@ -7,11 +7,11 @@ module.exports = {
 		name: "whitelistthread",
 		aliases: ["wlt", "wt"],
 		version: "1.5",
-		author: "Arijit",
+		author: "kuze",
 		countDown: 5,
 		role: 2,
 		description: { en: "Add, remove, list whitelist threads" },
-		category: "owner",
+		category: "admin",
 		guide: {
 			en: '{pn} add [tid...]\n{pn} remove [tid...]\n{pn} list\n{pn} mode <on|off>\n{pn} mode noti <on|off>'
 		}
@@ -26,8 +26,8 @@ module.exports = {
 			notAdded: "╭✦❎ | 𝙳𝚒𝚍𝚗'𝚝 𝚊𝚍𝚍 %1 𝚝𝚑𝚛𝚎𝚊𝚍/𝚜\n%2",
 			missingTIDRemove: "⚠ | 𝙿𝚕𝚎𝚊𝚜𝚎 𝚎𝚗𝚝𝚎𝚛 𝚃𝙸𝙳 𝚝𝚘 𝚛𝚎𝚖𝚘𝚟𝚎",
 			listWLTs: "╭✦✨ | 𝙻𝚒𝚜𝚝 𝚘𝚏 𝚃𝚑𝚛𝚎𝚊𝚍𝚜\n%1",
-			turnedOn: "✅ | 𝙼𝚘𝚍𝚎 𝚘𝚗",
-			turnedOff: "❎ | 𝙼𝚘𝚍𝚎 𝚘𝚏𝚏",
+			turnedOn: "✅ | 𝐖𝐥𝐭 𝐌𝐨𝐝𝐞 𝐨𝐧",
+			turnedOff: "❎ | 𝐖𝐥𝐭 𝐌𝐨𝐝𝐞 𝐨𝐟𝐟",
 			turnedOnNoti: "✅ | 𝙽𝚘𝚝𝚒 𝚘𝚗",
 			turnedOffNoti: "❎ | 𝙽𝚘𝚝𝚒 𝚘𝚏𝚏"
 		}
