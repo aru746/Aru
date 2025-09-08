@@ -15,7 +15,7 @@ module.exports = {
     role: 0,
     shortDescription: "Cute uptime with red glowing circles",
     longDescription: "Show uptime, CPU, RAM with glowing red visuals at bottom",
-    category: "system",
+    category: "general",
     guide: { en: "uptime" }
   },
 
