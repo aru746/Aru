@@ -9,7 +9,7 @@ module.exports = {
 			vi: "Xem bảng xếp hạng người dùng giàu nhất dưới dạng ảnh.",
 			en: "View the top richest users leaderboard as an image."
 		},
-		category: "group",
+		category: "economy",
 		guide: {
 			vi: "{pn}",
 			en: "{pn}"
@@ -43,17 +43,17 @@ module.exports = {
 		const { existsSync, mkdirSync } = require("fs-extra");
 		const { execSync } = require("child_process");
 
-		console.log("COMMAND: TOP | Checking for required packages...");
+		console.log("COMMAND: TOP2 | Checking for required packages...");
 		const packages = ["canvas", "axios", "fs-extra"];
 		for (const pkg of packages) {
 			try {
 				require.resolve(pkg);
 			} catch (err) {
-				console.error(`COMMAND: TOP | Dependency '${pkg}' not found. Installing...`);
+				console.error(`COMMAND: TOP2 | Dependency '${pkg}' not found. Installing...`);
 				try {
 					execSync(`npm install ${pkg}`, { stdio: "inherit" });
 				} catch (installErr) {
-					console.error(`COMMAND: TOP | Failed to install '${pkg}'. Please run 'npm install ${pkg}' manually and restart the bot.`);
+					console.error(`COMMAND: TOP2 | Failed to install '${pkg}'. Please run 'npm install ${pkg}' manually and restart the bot.`);
 					throw new Error(`Dependency installation failed for ${pkg}`);
 				}
 			}
@@ -61,16 +61,16 @@ module.exports = {
 
 		try {
 			const { registerFont } = require("canvas");
-			const assetsPath = resolve(__dirname, "assets", "top");
+			const assetsPath = resolve(__dirname, "assets", "top2");
 			if (!existsSync(assetsPath)) mkdirSync(assetsPath, { recursive: true });
 			const fontPath = resolve(assetsPath, "font.ttf");
 			if (existsSync(fontPath)) {
 				registerFont(fontPath, { family: "BeVietnamPro" });
 			} else {
-				console.log("COMMAND: TOP | Custom font not found, using system fonts.");
+				console.log("COMMAND: TOP2 | Custom font not found, using system fonts.");
 			}
 		} catch (e) {
-			console.error("COMMAND: TOP | Canvas is not installed correctly, cannot load fonts.", e);
+			console.error("COMMAND: TOP2 | Canvas is not installed correctly, cannot load fonts.", e);
 		}
 	},
 
@@ -80,7 +80,7 @@ module.exports = {
 		const { createWriteStream, ensureFileSync } = require("fs-extra");
 		const axios = require("axios");
 
-		const ACCESS_TOKEN = envCommands.top.ACCESS_TOKEN;
+		const ACCESS_TOKEN = envCommands.top2.ACCESS_TOKEN;
 
 		try {
 			const allUsers = await usersData.getAll();
@@ -175,15 +175,15 @@ module.exports = {
 			const theme = { primary: '#FFD700', secondary: '#8B949E', bg: ['#010409', '#0D1117'] };
 			const canvas = new Canvas(1200, 1800);
 			const ctx = canvas.getContext('2d');
-			const bgGradient = ctx.createLinearGradient(0, 0, 0, 1800); // Changed to 1800
+			const bgGradient = ctx.createLinearGradient(0, 0, 0, 1800);
 			bgGradient.addColorStop(0, theme.bg[0]);
 			bgGradient.addColorStop(1, theme.bg[1]);
 			ctx.fillStyle = bgGradient;
-			ctx.fillRect(0, 0, 1200, 1800); // Changed to 1800
+			ctx.fillRect(0, 0, 1200, 1800);
 			ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
 			ctx.lineWidth = 1;
-			for (let i = 0; i < 1200; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 1800); ctx.stroke(); } // Changed to 1800
-			for (let i = 0; i < 1800; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(1200, i); ctx.stroke(); } // Changed to 1800
+			for (let i = 0; i < 1200; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 1800); ctx.stroke(); }
+			for (let i = 0; i < 1800; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(1200, i); ctx.stroke(); }
 
 			ctx.textAlign = 'center';
 			drawGlowingText(ctx, getLang("leaderboardTitle"), 600, 100, theme.primary, 60);
@@ -240,22 +240,19 @@ module.exports = {
 				ctx.fillText(fitText(ctx, user.name || getLang("fallbackName"), 350), 240, currentY + 58);
 
 				const barMaxWidth = 200;
-				const barStartX = 880; // Moved 10 pixels to the right
+				const barStartX = 880;
 				const barHeight = 20;
 				const barRadius = 10;
 				const progress = (user.money / topUsers[0].money) * barMaxWidth;
 				
-				// Rounded background rectangle
 				ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
 				drawRoundedRect(ctx, barStartX, currentY + 35, barMaxWidth, barHeight, barRadius);
 				ctx.fill();
 
-				// Rounded progress bar
 				ctx.fillStyle = theme.primary;
 				drawRoundedRect(ctx, barStartX, currentY + 35, progress, barHeight, barRadius);
 				ctx.fill();
 
-				// New function to shorten large balance
 				const formatShortenedBalance = (balanceStr, maxLength) => {
 					if (balanceStr.length > maxLength) {
 						const parts = balanceStr.split('$');
@@ -267,7 +264,6 @@ module.exports = {
 					return balanceStr;
 				};
 
-				// Balance moved to the left and shortened
 				const balanceText = formatMoneyShort(user.money || 0);
 				ctx.textAlign = 'right';
 				ctx.font = `bold 30px "BeVietnamPro", "sans-serif"`;
@@ -282,19 +278,19 @@ module.exports = {
 			ctx.fillStyle = theme.secondary;
 			ctx.font = `normal 24px "BeVietnamPro", "sans-serif"`;
 
-			const path = resolve(__dirname, 'cache', `top_${message.threadID}.png`);
+			const path = resolve(__dirname, 'cache', `top2_${message.threadID}.png`);
 			const out = createWriteStream(path);
 			const stream = canvas.createPNGStream();
 			stream.pipe(out);
 			out.on('finish', function() {
 				message.reply({ attachment: require('fs').createReadStream(path) }, function (err, info) {
 					if (err) return console.error(err);
-					global.GoatBot.onReply.set(info.messageID, { commandName: "top", messageID: info.messageID, author: message.senderID, threadID: message.threadID, type: 'leaderboard' });
+					global.GoatBot.onReply.set(info.messageID, { commandName: "top2", messageID: info.messageID, author: message.senderID, threadID: message.threadID, type: 'leaderboard' });
 				});
 			});
 		} catch (err) {
-			console.error("Error creating top leaderboard image:", err);
-			message.reply("❌ An error occurred while generating the top list image.");
+			console.error("Error creating top2 leaderboard image:", err);
+			message.reply("❌ An error occurred while generating the top2 list image.");
 		}
 	},
 	
@@ -308,7 +304,7 @@ module.exports = {
 			await this.onStart({ 
 				...arguments[0], 
 				args: newArgs, 
-				event: { ...arguments[0].event, body: `/top ${newArgs.join(' ')}` }
+				event: { ...arguments[0].event, body: `/top2 ${newArgs.join(' ')}` }
 			});
 		} catch (e) {
 			console.error("Error during pagination reply:", e);
