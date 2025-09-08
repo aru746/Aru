@@ -29,7 +29,7 @@ module.exports = {
 			vi: "đây là mô tả dài của lệnh",
 			en: "this is long description of command"
 		}, // Long description of command
-		category: "categoryName", // Category of command
+		category: "general", // Category of command
 		guide: {
 			vi: "đây là hướng dẫn sử dụng của lệnh",
 			en: "this is guide of command"
