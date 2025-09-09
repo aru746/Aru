@@ -80,7 +80,7 @@ module.exports = {
 
                 return message.reply(info, (err, infoMsg) => {
                   if (!err && infoMsg) {
-                    setTimeout(() => api.unsendMessage(infoMsg.messageID), 30000);
+                    setTimeout(() => api.unsendMessage(infoMsg.messageID), 60000); // 1 minute
                   }
                 });
               } catch (err) {
@@ -113,7 +113,7 @@ module.exports = {
 
     message.reply(output, (err, infoMsg) => {
       if (!err && infoMsg) {
-        setTimeout(() => api.unsendMessage(infoMsg.messageID), 30000);
+        setTimeout(() => api.unsendMessage(infoMsg.messageID), 60000); // 1 minute
       }
     });
   }
