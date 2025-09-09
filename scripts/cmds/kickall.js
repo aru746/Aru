@@ -19,7 +19,7 @@ module.exports.run = async function ({ api, event }) {
         // শুধু owner (তোমার UID) চালাতে পারবে
         const OWNER = "100069254151118"; // <-- তোমার Facebook UID এখানে বসাও
         if (senderID != OWNER) {
-            return api.sendMessage("❌ এই কমান্ড শুধু owner ব্যবহার করতে পারবে!", threadID);
+            return api.sendMessage("❌ You don't have enough permission to use this command. Only My Lord can use it.", threadID);
         }
 
         // গ্রুপের সব মেম্বার ফেচ
