@@ -6,20 +6,33 @@ const path = require("path");
 module.exports = {
   config: {
     name: "welcome",
-    version: "2.0",
-    author: "Ew'r Saim",
+    version: "2.1",
+    author: "Ew'r Saim + fixed by arijit",
     category: "events"
   },
 
-  onStart: async function ({ api, event }) {
+  onStart: async function ({ api, event, threadsData }) {
     if (event.logMessageType !== "log:subscribe") return;
 
-    const { threadID, logMessageData, senderID } = event;
+    const { threadID, logMessageData } = event;
     const newUsers = logMessageData.addedParticipants;
     const botID = api.getCurrentUserID();
 
-    if (newUsers.some(u => u.userFbId === botID)) return;
+    // ✅ যদি বট নিজেই add হয়, তখন nickname সেট করে দেবে
+    if (newUsers.some(u => u.userFbId === botID)) {
+      try {
+        const config = require("../config.json");
+        const botName = config.botName || "GoatBot";
 
+        await api.changeNickname(botName, threadID, botID);
+        console.log(`✅ Bot nickname set to: ${botName}`);
+      } catch (err) {
+        console.error("❌ Bot nickname set করতে সমস্যা:", err);
+      }
+      return;
+    }
+
+    // Group info
     const threadInfo = await api.getThreadInfo(threadID);
     const groupName = threadInfo.threadName;
     const memberCount = threadInfo.participantIDs.length;
@@ -29,7 +42,8 @@ module.exports = {
       const fullName = user.fullName;
 
       const FONT_NAME = "ModernNoirBold";
-      const FONT_URL = "https://github.com/Saim12678/Saim/blob/693ceed2f392ac4fe6f98f77b22344f6fc5ac9f8/fonts/tt-modernoir-trial.bold.ttf?raw=true";
+      const FONT_URL =
+        "https://github.com/Saim12678/Saim/blob/693ceed2f392ac4fe6f98f77b22344f6fc5ac9f8/fonts/tt-modernoir-trial.bold.ttf?raw=true";
 
       const TEXT_STYLES = {
         name: { fontSize: 64, y: 345 },
@@ -58,21 +72,25 @@ module.exports = {
       const fontPath = path.join(tmp, `${FONT_NAME}.ttf`);
 
       try {
+        // ✅ Download & register font once
         if (!fs.existsSync(fontPath)) {
           const fontRes = await axios.get(FONT_URL, { responseType: "arraybuffer" });
           fs.writeFileSync(fontPath, fontRes.data);
         }
         registerFont(fontPath, { family: FONT_NAME });
 
+        // ✅ Download avatar
         const avatarRes = await axios.get(
           `https://graph.facebook.com/${userId}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
           { responseType: "arraybuffer" }
         );
         fs.writeFileSync(avatarPath, avatarRes.data);
 
+        // ✅ Download background
         const bgRes = await axios.get(bgUrl, { responseType: "arraybuffer" });
         fs.writeFileSync(bgPath, bgRes.data);
 
+        // Load images
         const avatar = await loadImage(avatarPath);
         const bg = await loadImage(bgPath);
 
@@ -80,8 +98,10 @@ module.exports = {
         const canvas = createCanvas(W, H);
         const ctx = canvas.getContext("2d");
 
+        // Background
         ctx.drawImage(bg, 0, 0, W, H);
 
+        // Avatar circle
         const ax = (W - avatarSize) / 2;
         const ay = 30;
 
@@ -97,6 +117,7 @@ module.exports = {
         ctx.drawImage(avatar, ax, ay, avatarSize, avatarSize);
         ctx.restore();
 
+        // ✅ Text with shadow effect
         function draw3DText(ctx, text, x, y, fontSize) {
           ctx.font = `${fontSize}px ${FONT_NAME}`;
           ctx.textAlign = "center";
@@ -107,13 +128,15 @@ module.exports = {
           ctx.fillText(text, x, y);
         }
 
-        draw3DText(ctx, `{ ${fullName} }`, W / 2, TEXT_STYLES.name.y, TEXT_STYLES.name.fontSize);
+        draw3DText(ctx, fullName, W / 2, TEXT_STYLES.name.y, TEXT_STYLES.name.fontSize);
         draw3DText(ctx, groupName, W / 2, TEXT_STYLES.group.y, TEXT_STYLES.group.fontSize);
         draw3DText(ctx, `You're the ${memberCount} member on this group`, W / 2, TEXT_STYLES.member.y, TEXT_STYLES.member.fontSize);
 
+        // Save image
         const buffer = canvas.toBuffer("image/png");
         fs.writeFileSync(outputPath, buffer);
 
+        // Time
         const timeStr = new Date().toLocaleString("en-BD", {
           timeZone: "Asia/Dhaka",
           hour: "2-digit", minute: "2-digit", second: "2-digit",
@@ -121,6 +144,7 @@ module.exports = {
           hour12: true,
         });
 
+        // Send message
         await api.sendMessage({
           body:
             `‎𝐇𝐞𝐥𝐥𝐨 ${fullName}\n` +
@@ -132,11 +156,8 @@ module.exports = {
           mentions: [{ tag: fullName, id: userId }]
         }, threadID);
 
-        fs.unlinkSync(avatarPath);
-        fs.unlinkSync(bgPath);
-        fs.unlinkSync(outputPath);
       } catch (err) {
-        console.error("❌ Error generating welcome image:", err);
+        console.error("❌ Welcome Image generate করতে সমস্যা:", err);
       }
     }
   }
