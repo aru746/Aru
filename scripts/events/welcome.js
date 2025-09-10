@@ -1,4 +1,3 @@
-const { getTime } = global.utils;
 const { createCanvas, loadImage, registerFont } = require("canvas");
 const axios = require("axios");
 const fs = require("fs-extra");
@@ -9,30 +8,27 @@ if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
 module.exports = {
   config: {
     name: "welcome",
-    version: "2.1",
-    author: "NTKhang & Customized by Mahabub + ChatGPT Fix",
+    version: "2.4",
+    author: "NTKhang & Customized by Mahabub",
     category: "events"
   },
 
   langs: {
     en: {
-      session1: "𝗺𝗼𝗿𝗻𝗶𝗻𝗴",
-      session2: "𝗻𝗼𝗼𝗻",
-      session3: "𝗮𝗳𝘁𝗲𝗿𝗻𝗼𝗼𝗻",
-      session4: "𝗲𝘃𝗲𝗻𝗶𝗻𝗴",
-      defaultWelcomeMessage: `𝙰𝚂𝚂𝙰𝙻𝙰𝙼𝚄𝚆𝙰𝙻𝙰𝙸𝙺𝚄𝙼 {userName}  𝚆𝙴𝙻𝙻𝙲𝙾𝙼𝙴  
-𝚆𝙴𝙻𝙻𝙲𝙾𝙼𝙴 {multiple} 𝚃𝙾 𝚃𝙷𝙴 𝙲𝙷𝙰𝚃 𝙱𝙾𝚇: {boxName}  
-𝙷𝙰𝚅𝙴 𝙰 𝙽𝙸𝙲𝙴 {session} 🐼♲`
+      defaultWelcomeMessage: `‎𝐇𝐞𝐥𝐥𝐨 {userName}
+𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐭𝐨 {boxName}
+𝐘𝐨𝐮'𝐫𝐞 𝐭𝐡𝐞 {memberCount} 𝐦𝐞𝐦𝐛𝐞𝐫 𝐨𝐧 𝐭𝐡𝐢𝐬 𝐠𝐫𝐨𝐮𝐩, 𝐩𝐥𝐞𝐚𝐬𝐞 𝐞𝐧𝐣𝐨𝐲 🎉
+━━━━━━━━━━━━━━━━
+📅 {time}`
     }
   },
 
   onStart: async ({ threadsData, message, event, api, getLang }) => {
     if (event.logMessageType !== "log:subscribe") return;
 
-    const hours = getTime("HH");
     const { threadID } = event;
-    const { nickNameBot } = global.GoatBot.config;
-    const dataAddedParticipants = event.logMessageData.addedParticipants;
+    const { nickNameBot } = global.GoatBot.config || {};
+    const dataAddedParticipants = event.logMessageData.addedParticipants || [];
 
     // If bot is added
     if (dataAddedParticipants.some(item => item.userFbId == api.getCurrentUserID())) {
@@ -50,36 +46,30 @@ module.exports = {
     global.temp.welcomeEvent[threadID].joinTimeout = setTimeout(async function () {
       try {
         const threadData = await threadsData.get(threadID);
-        if (threadData?.settings?.sendWelcomeMessage === false) return;
+        if (!threadData || threadData?.settings?.sendWelcomeMessage === false) return;
 
         const dataAdded = global.temp.welcomeEvent[threadID].dataAddedParticipants;
-        const threadName = threadData.threadName || "this chat";
-        const userName = [], mentions = [];
-        const multiple = dataAdded.length > 1;
+        if (!dataAdded || dataAdded.length === 0) return;
 
-        for (const user of dataAdded) {
-          userName.push(user.fullName);
-          mentions.push({ tag: user.fullName, id: user.userFbId });
-        }
+        const threadName = threadData.threadName || "this group";
+        const names = dataAdded.map(u => u.fullName).join(", ");
 
-        if (userName.length === 0) return;
+        // Build formatted time string
+        const timeStr = new Date().toLocaleString("en-BD", {
+          timeZone: "Asia/Dhaka",
+          hour: "2-digit", minute: "2-digit", second: "2-digit",
+          weekday: "long", year: "numeric", month: "2-digit", day: "2-digit",
+          hour12: true
+        });
 
-        // Build welcome message
+        // Replace placeholders
         let { welcomeMessage = getLang("defaultWelcomeMessage") } = threadData.data || {};
         welcomeMessage = welcomeMessage
-          .replace(/\{userName\}/g, userName.join(", "))
+          .replace(/\{userName\}/g, names)
           .replace(/\{boxName\}/g, threadName)
-          .replace(/\{multiple\}/g, multiple ? "you guys" : "you")
-          .replace(/\{session\}/g,
-            hours <= 10 ? getLang("session1") :
-              hours <= 12 ? getLang("session2") :
-                hours <= 18 ? getLang("session3") :
-                  getLang("session4")
-          );
+          .replace(/\{memberCount\}/g, threadData.participantIDs?.length || 0)
+          .replace(/\{time\}/g, timeStr);
 
-        const form = { body: welcomeMessage, mentions };
-
-        // ==== Canvas Welcome Card ====
         const tmp = path.join(__dirname, "..", "cache");
         await fs.ensureDir(tmp);
 
@@ -89,11 +79,15 @@ module.exports = {
         const FONT_URL = "https://github.com/Saim12678/Saim/blob/693ceed2f392ac4fe6f98f77b22344f6fc5ac9f8/fonts/tt-modernoir-trial.bold.ttf?raw=true";
         const fontPath = path.join(tmp, `${FONT_NAME}.ttf`);
 
-        if (!fs.existsSync(fontPath)) {
-          const fontRes = await axios.get(FONT_URL, { responseType: "arraybuffer" });
-          fs.writeFileSync(fontPath, fontRes.data);
+        try {
+          if (!fs.existsSync(fontPath)) {
+            const fontRes = await axios.get(FONT_URL, { responseType: "arraybuffer" });
+            fs.writeFileSync(fontPath, fontRes.data);
+          }
+          registerFont(fontPath, { family: FONT_NAME });
+        } catch {
+          console.warn("⚠️ Font load failed, fallback to sans-serif.");
         }
-        registerFont(fontPath, { family: FONT_NAME });
 
         const backgrounds = [
           "https://files.catbox.moe/cj68oa.jpg",
@@ -104,7 +98,13 @@ module.exports = {
           "https://files.catbox.moe/y78bmv.jpg"
         ];
 
+        // Create welcome card per new member
         for (const user of dataAdded) {
+          const form = {
+            body: welcomeMessage,
+            mentions: [{ tag: user.fullName, id: user.userFbId }]
+          };
+
           try {
             const avatarPath = path.join(tmp, `avt_${user.userFbId}.png`);
             const bgPath = path.join(tmp, "bg.jpg");
@@ -146,28 +146,18 @@ module.exports = {
 
             // Draw 3D text
             function draw3DText(ctx, text, x, y, fontSize) {
-              ctx.font = `${fontSize}px ${FONT_NAME}`;
+              ctx.font = `${fontSize}px ${FONT_NAME}, sans-serif`;
               ctx.textAlign = "center";
-              const offsets = [[4, 4], [3.5, 3.5], [3, 3], [2.5, 2.5], [2, 2], [1.5, 1.5], [1, 1]];
-              ctx.fillStyle = "#000000";
+              const offsets = [[4, 4], [3, 3], [2, 2], [1, 1]];
+              ctx.fillStyle = "#000";
               for (let [dx, dy] of offsets) ctx.fillText(text, x + dx, y + dy);
-              ctx.fillStyle = "#ffffff";
+              ctx.fillStyle = "#fff";
               ctx.fillText(text, x, y);
             }
 
             draw3DText(ctx, user.fullName, W / 2, 345, 64);
             draw3DText(ctx, threadName, W / 2, 400, 42);
             draw3DText(ctx, `You're the ${threadData.participantIDs?.length || 0} member`, W / 2, 447, 38);
-
-            // Time
-            const timeStr = new Date().toLocaleString("en-BD", {
-              timeZone: "Asia/Dhaka",
-              hour: "2-digit", minute: "2-digit", second: "2-digit",
-              weekday: "long", year: "numeric", month: "2-digit", day: "2-digit",
-              hour12: true
-            });
-
-            form.body += `\n━━━━━━━━━━━━━━━━\n📅 ${timeStr}`;
 
             const buffer = canvas.toBuffer("image/png");
             fs.writeFileSync(outputPath, buffer);
@@ -180,12 +170,12 @@ module.exports = {
             fs.unlinkSync(bgPath);
             fs.unlinkSync(outputPath);
           } catch (err) {
-            console.error("Error creating welcome image:", err);
+            console.error("❌ Error creating welcome image:", err);
             await message.send(form);
           }
         }
       } catch (err) {
-        console.error("Welcome event error:", err);
+        console.error("❌ Welcome event error:", err);
       }
 
       delete global.temp.welcomeEvent[threadID];
