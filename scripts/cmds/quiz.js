@@ -65,8 +65,8 @@ module.exports = {
     const userReply = event.body.trim().toLowerCase();
 
     if (userReply === correctAnswer.toLowerCase()) {
-      const rewardCoins = 500;
-      const rewardExp = 121;
+      const rewardCoins = 15000;
+      const rewardExp = 321;
       const userData = await usersData.get(author);
       await usersData.set(author, {
         money: userData.money + rewardCoins,
