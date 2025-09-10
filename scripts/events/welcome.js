@@ -8,14 +8,14 @@ if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
 module.exports = {
   config: {
     name: "welcome",
-    version: "2.4",
+    version: "2.5",
     author: "NTKhang & Customized by Mahabub",
     category: "events"
   },
 
   langs: {
     en: {
-      defaultWelcomeMessage: `‎𝐇𝐞𝐥𝐥𝐨 {userName}
+      defaultWelcomeMessage: `𝐇𝐞𝐥𝐥𝐨 {userName}
 𝐖𝐞𝐥𝐜𝐨𝐦𝐞 𝐭𝐨 {boxName}
 𝐘𝐨𝐮'𝐫𝐞 𝐭𝐡𝐞 {memberCount} 𝐦𝐞𝐦𝐛𝐞𝐫 𝐨𝐧 𝐭𝐡𝐢𝐬 𝐠𝐫𝐨𝐮𝐩, 𝐩𝐥𝐞𝐚𝐬𝐞 𝐞𝐧𝐣𝐨𝐲 🎉
 ━━━━━━━━━━━━━━━━
@@ -27,14 +27,9 @@ module.exports = {
     if (event.logMessageType !== "log:subscribe") return;
 
     const { threadID } = event;
-    const { nickNameBot } = global.GoatBot.config || {};
     const dataAddedParticipants = event.logMessageData.addedParticipants || [];
 
-    // If bot is added
-    if (dataAddedParticipants.some(item => item.userFbId == api.getCurrentUserID())) {
-      if (nickNameBot) api.changeNickname(nickNameBot, threadID, api.getCurrentUserID());
-      return message.send(getLang("defaultWelcomeMessage"));
-    }
+    // 🔴 Removed self-welcome system here
 
     if (!global.temp.welcomeEvent[threadID]) {
       global.temp.welcomeEvent[threadID] = { joinTimeout: null, dataAddedParticipants: [] };
@@ -62,12 +57,15 @@ module.exports = {
           hour12: true
         });
 
+        // ✅ Fix member counting
+        const memberCount = threadData.participantIDs ? threadData.participantIDs.length : 0;
+
         // Replace placeholders
         let { welcomeMessage = getLang("defaultWelcomeMessage") } = threadData.data || {};
         welcomeMessage = welcomeMessage
           .replace(/\{userName\}/g, names)
           .replace(/\{boxName\}/g, threadName)
-          .replace(/\{memberCount\}/g, threadData.participantIDs?.length || 0)
+          .replace(/\{memberCount\}/g, memberCount)
           .replace(/\{time\}/g, timeStr);
 
         const tmp = path.join(__dirname, "..", "cache");
@@ -157,7 +155,7 @@ module.exports = {
 
             draw3DText(ctx, user.fullName, W / 2, 345, 64);
             draw3DText(ctx, threadName, W / 2, 400, 42);
-            draw3DText(ctx, `You're the ${threadData.participantIDs?.length || 0} member`, W / 2, 447, 38);
+            draw3DText(ctx, `You're the ${memberCount} member`, W / 2, 447, 38);
 
             const buffer = canvas.toBuffer("image/png");
             fs.writeFileSync(outputPath, buffer);
