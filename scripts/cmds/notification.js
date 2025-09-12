@@ -37,7 +37,7 @@ module.exports = {
     // Styled notification format
     const formSend = {
       body: `>🎀\n 𝐍𝐨𝐭𝐢𝐟𝐢𝐜𝐚𝐭𝐢𝐨𝐧 𝐟𝐫𝐨𝐦 𝐀𝐝𝐦𝐢𝐧 𝐀𝐫𝐮
-──────────────
+────────────────────
 ${args.join(" ")}`,
       attachment: await getStreamsFromAttachment(
         [
