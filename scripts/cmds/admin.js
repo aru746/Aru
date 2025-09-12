@@ -39,7 +39,23 @@ module.exports = {
       };
     };
 
-    switch ((args[0] || "").toLowerCase()) {
+    const action = (args[0] || "").toLowerCase();
+
+    // 🔹 Allow everyone to run "list"
+    if (action === "list" || action === "-l") {
+      if (!config.adminBot.length)
+        return message.reply(getLang("listAdmin", "No admins found"));
+
+      const adminList = (await Promise.all(config.adminBot.map(sendUserTag)))
+        .filter(Boolean)
+        .map(user => `╭➢ 𝐍𝐚𝐦𝐞: ${user.name}\n╰➢ 𝐔𝐢𝐝: ${user.uid}`)
+        .join("\n\n");
+
+      return message.reply(getLang("listAdmin", adminList));
+    }
+
+    // 🔹 Other actions (add/remove) stay admin-only
+    switch (action) {
       case "add":
       case "-a": {
         if (!args[1] && Object.keys(event.mentions).length === 0 && !event.messageReply)
@@ -100,19 +116,6 @@ module.exports = {
           (removedNames.length ? getLang("removed", adminIds.length, removedNames.join("\n")) + "\n" : "") +
           (notAdminNames.length ? getLang("notAdmin", notAdminIds.length, notAdminNames.join("\n")) : "")
         );
-      }
-
-      case "list":
-      case "-l": {
-        if (!config.adminBot.length)
-          return message.reply(getLang("listAdmin", "No admins found"));
-
-        const adminList = (await Promise.all(config.adminBot.map(sendUserTag)))
-          .filter(Boolean)
-          .map(user => `╭➢ 𝐍𝐚𝐦𝐞: ${user.name}\n╰➢ 𝐔𝐢𝐝: ${user.uid}`)
-          .join("\n\n");
-
-        return message.reply(getLang("listAdmin", adminList));
       }
 
       default:
