@@ -6,7 +6,7 @@ const STATUS_PATH = path.join(__dirname, "lottery_status.json");
 
 const MAX_TICKETS = 20;
 const MAX_PER_USER = 3;
-const TICKET_PRICE = 1_000_000;
+const TICKET_PRICE = 10_000_000;
 
 module.exports = {
   config: {
@@ -55,7 +55,7 @@ module.exports = {
       const cost = count * TICKET_PRICE;
       if (userBalance < cost) {
         return message.reply(
-          `💸 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 $${(cost / 1_000_000)}𝐌 𝐭𝐨 𝐛𝐮𝐲 ${count} ticket(s).\n💼 𝐘𝐨𝐮 𝐡𝐚𝐯𝐞: $${(userBalance / 1_000_000)}𝐌`
+          `💸 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 $${(cost / 10_000_000)}𝐌 𝐭𝐨 𝐛𝐮𝐲 ${count} ticket(s).\n💼 𝐘𝐨𝐮 𝐡𝐚𝐯𝐞: $${(userBalance / 10_000_000)}𝐌`
         );
       }
 
@@ -74,7 +74,7 @@ module.exports = {
       await fs.writeJson(DATA_PATH, data);
 
       return message.reply(
-        `✅ 𝐘𝐨𝐮 𝐩𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝 ${count} ticket(s).\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭 𝐧𝐮𝐦𝐛𝐞𝐫𝐬: ${newTickets.join(", ")}\n💰 𝐓𝐨𝐭𝐚𝐥 𝐜𝐨𝐬𝐭: $${(cost / 1_000_000)}𝐌`
+        `✅ 𝐘𝐨𝐮 𝐩𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝 ${count} ticket(s).\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭 𝐧𝐮𝐦𝐛𝐞𝐫𝐬: ${newTickets.join(", ")}\n💰 𝐓𝐨𝐭𝐚𝐥 𝐜𝐨𝐬𝐭: $${(cost / 10_000_000)}𝐌`
       );
     }
 
@@ -109,7 +109,7 @@ module.exports = {
         `├ 🏅 𝐖𝐢𝐧𝐧𝐞𝐫 𝐚𝐧𝐧𝐨𝐮𝐧𝐜𝐞𝐝\n` +
         `├ 🎀 𝐖𝐢𝐧𝐧𝐞𝐫: ${winnerData.name}\n` +
         `├ 🎟 𝐓𝐢𝐜𝐤𝐞𝐭: #${winnerTicket.ticketNumber}\n` +
-        `├ 💰 𝐏𝐫𝐢𝐳𝐞: $${prize / 1_000_000}𝐌\n` +
+        `├ 💰 𝐏𝐫𝐢𝐳𝐞: $${prize / 10_000_000}𝐌\n` +
         `╰──────────────⭓\n\n• Prize has been deposited automatically.`
       );
     }
@@ -126,7 +126,7 @@ module.exports = {
         usersMap[ticket.userId].push(ticket.ticketNumber);
       }
 
-      let infoText = `🎰 𝐋𝐨𝐭𝐭𝐞𝐫𝐲 𝐒𝐭𝐚𝐭𝐮𝐬:\n\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭𝐬 𝐬𝐨𝐥𝐝: ${data.tickets.length}/${MAX_TICKETS}\n💰 𝐏𝐫𝐢𝐳𝐞 𝐩𝐨𝐨𝐥: $${(data.tickets.length * TICKET_PRICE / 1_000_000)}𝐌\n\n`;
+      let infoText = `🎰 𝐋𝐨𝐭𝐭𝐞𝐫𝐲 𝐒𝐭𝐚𝐭𝐮𝐬:\n\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭𝐬 𝐬𝐨𝐥𝐝: ${data.tickets.length}/${MAX_TICKETS}\n💰 𝐏𝐫𝐢𝐳𝐞 𝐩𝐨𝐨𝐥: $${(data.tickets.length * TICKET_PRICE / 10_000_000)}𝐌\n\n`;
 
       for (const [uid, ticketNums] of Object.entries(usersMap)) {
         const name = (await usersData.get(uid))?.name || uid;
@@ -143,7 +143,7 @@ module.exports = {
       }
 
       return message.reply(
-        `🏆 𝐋𝐚𝐬𝐭 𝐖𝐢𝐧𝐧𝐞𝐫:\n👤 ${status.name}\n🎫 Ticket: #${status.ticketNumber}\n💰 Prize: $${status.prize / 1_000_000}𝐌`
+        `🏆 𝐋𝐚𝐬𝐭 𝐖𝐢𝐧𝐧𝐞𝐫:\n👤 ${status.name}\n🎫 Ticket: #${status.ticketNumber}\n💰 Prize: $${status.prize / 10_000_000}𝐌`
       );
     }
 
