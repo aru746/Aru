@@ -60,7 +60,7 @@ module.exports = {
       writer.on("finish", () => {
         api.sendMessage(
           {
-            body: `🔍 Prompt: “${prompt}”\n🖼 AI Art is ready! ✨`,
+            body: `🖼 AI Art is ready! ✨`,
             attachment: fs.createReadStream(tempPath)
           },
           event.threadID,
