@@ -12,7 +12,6 @@ const diceLimitSchema = new mongoose.Schema({
   reset: Number
 });
 
-// Fix OverwriteModelError
 const BotBalance = mongoose.models.BotBalance || mongoose.model("BotBalance", botBalanceSchema);
 const DiceLimit = mongoose.models.DiceLimit || mongoose.model("DiceLimit", diceLimitSchema);
 
@@ -47,9 +46,8 @@ function parseBet(input) {
 module.exports = {
   config: {
     name: "dice",
-    version: "3.2",
+    version: "4.0",
     author: "Arijit",
-    countDown: 5,
     role: 0,
     shortDescription: "Play dice against bot",
     longDescription: "Roll a dice against the bot. Higher number wins the bet.",
@@ -57,16 +55,16 @@ module.exports = {
     guide: "{pn} <amount>"
   },
 
-  onStart: async function ({ event, message, args, api }) {
+  onStart: async function ({ event, message, args }) {
     const bet = parseBet(args[0]);
-    if (isNaN(bet) || bet <= 0) return message.reply("❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐞𝐧𝐭𝐞𝐫 𝐚 𝐯𝐚𝐥𝐢𝐝 𝐛𝐞𝐭 𝐚𝐦𝐨𝐮𝐧𝐭!");
+    if (isNaN(bet) || bet <= 0) return message.reply("❌ Please enter a valid bet amount!");
     if (bet > 50000000) return message.reply("❌ | 𝐓𝐡𝐞 𝐦𝐚𝐱𝐢𝐦𝐮𝐦 𝐛𝐞𝐭 𝐚𝐦𝐨𝐮𝐧𝐭 𝐢𝐬 𝟓𝟎𝐌.");
 
     const userId = event.senderID;
     const now = Date.now();
     const hour = 60 * 60 * 1000;
 
-    // === check or init dice limit ===
+    // === check/init dice limit ===
     let limitData = await DiceLimit.findOne({ userId });
     if (!limitData) limitData = new DiceLimit({ userId, plays: 0, reset: now + hour });
     if (now > limitData.reset) { limitData.plays = 0; limitData.reset = now + hour; }
@@ -80,40 +78,27 @@ module.exports = {
     limitData.plays += 1;
     await limitData.save();
 
-    // === send countdown ===
-    let countdownMsg = await message.reply("⏳ Rolling dice in 10s...");
-    let counter = 10;
+    // === init bot balance ===
+    let botBalance = await BotBalance.findById("main");
+    if (!botBalance) { botBalance = new BotBalance({ _id: "main", balance: 0 }); await botBalance.save(); }
 
-    const countdownInterval = setInterval(async () => {
-      counter--;
-      if (counter > 0) {
-        api.editMessage(`⏳ Rolling dice in ${counter}s...`, countdownMsg.messageID);
-      } else {
-        clearInterval(countdownInterval);
+    // === roll dice instantly ===
+    const userRoll = Math.floor(Math.random() * 6) + 1;
+    const botRoll = Math.floor(Math.random() * 6) + 1;
 
-        // === check/init bot balance ===
-        let botBalance = await BotBalance.findById("main");
-        if (!botBalance) { botBalance = new BotBalance({ _id: "main", balance: 0 }); await botBalance.save(); }
+    let resultMsg = `🎲 𝐘𝐨𝐮 𝐫𝐨𝐥𝐥𝐞𝐝: ${userRoll}\n🤖 𝐁𝐨𝐭 𝐫𝐨𝐥𝐥𝐞𝐝: ${botRoll}\n\n`;
+    if (userRoll > botRoll) {
+      botBalance.balance -= bet;
+      await botBalance.save();
+      resultMsg += `• 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐰𝐨𝐧 ${formatMoney(bet)} ✨`;
+    } else if (userRoll < botRoll) {
+      botBalance.balance += bet;
+      await botBalance.save();
+      resultMsg += `• 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 ${formatMoney(bet)} 🥺`;
+    } else {
+      resultMsg += `• 𝐈𝐭'𝐬 𝐚 𝐝𝐫𝐚𝐰! 😮`;
+    }
 
-        // === roll dice ===
-        const userRoll = Math.floor(Math.random() * 6) + 1;
-        const botRoll = Math.floor(Math.random() * 6) + 1;
-
-        let resultMsg = `🎲 𝐘𝐨𝐮 𝐫𝐨𝐥𝐥𝐞𝐝: ${userRoll}\n🤖 𝐁𝐨𝐭 𝐫𝐨𝐥𝐥𝐞𝐝: ${botRoll}\n\n`;
-        if (userRoll > botRoll) {
-          botBalance.balance -= bet;
-          await botBalance.save();
-          resultMsg += `• 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐰𝐨𝐧 ${formatMoney(bet)} ✨`;
-        } else if (userRoll < botRoll) {
-          botBalance.balance += bet;
-          await botBalance.save();
-          resultMsg += `• 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 ${formatMoney(bet)} 🥺`;
-        } else {
-          resultMsg += `• 𝐈𝐭'𝐬 𝐚 𝐝𝐫𝐚𝐰! 😮`;
-        }
-
-        api.editMessage(resultMsg, countdownMsg.messageID);
-      }
-    }, 1000);
+    return message.reply(resultMsg);
   }
 };
