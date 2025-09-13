@@ -32,8 +32,10 @@ module.exports = {
       return text.split('').map(char => boldAlphabet[char] || char).join('');
     }
 
-    // ✅ Format money with suffix
+    // ✅ Format money with suffix & handle Infinity
     function formatAmount(num) {
+      if (num === Infinity) return "infinity$";
+      if (num === -Infinity) return "-infinity$";
       num = Number(num) || 0;
       const suffixes = ["", "K", "M", "B", "T", "Q", "QU", "S"];
       const tier = Math.floor(Math.log10(Math.abs(num || 1)) / 3);
