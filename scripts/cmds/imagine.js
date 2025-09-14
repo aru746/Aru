@@ -7,7 +7,7 @@ module.exports = {
     name: "imagine",
     aliases: ["img", "gen", "im"],
     version: "1.2",
-    author: "MR᭄﹅ MAHABUB﹅ メꪜ + Fixed by Arijit",
+    author: "MR᭄﹅ MAHABUB﹅ メꪜ",
     countDown: 5,
     role: 0,
     description: "Generate image from prompt using Mahabub imagine API",
