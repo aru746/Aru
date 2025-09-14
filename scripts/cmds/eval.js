@@ -3,13 +3,13 @@ const { removeHomeDir, log } = global.utils;
 module.exports = {
 	config: {
 		name: "eval",
-		version: "1.6",
+		version: "1.7",
 		author: "NTKhang",
 		countDown: 5,
 		role: 2,
 		description: {
-			vi: "Test code nhanh",
-			en: "Test code quickly"
+			vi: "Test code nhanh (chỉ dành cho owner chính)",
+			en: "Test code quickly (only for main owner)"
 		},
 		category: "owner",
 		guide: {
@@ -20,14 +20,22 @@ module.exports = {
 
 	langs: {
 		vi: {
-			error: "❌ Đã có lỗi xảy ra:"
+			error: "❌ Đã có lỗi xảy ra:",
+			noPermission: "⛔ Bạn không có quyền sử dụng lệnh này."
 		},
 		en: {
-			error: "❌ An error occurred:"
+			error: "❌ An error occurred:",
+			noPermission: "⛔ You don't have permission to use this command."
 		}
 	},
 
-	onStart: async function ({ api, args, message, event, threadsData, usersData, dashBoardData, globalData, threadModel, userModel, dashBoardModel, globalModel, role, commandName, getLang }) {
+	onStart: async function ({ api, args, message, event, getLang }) {
+		// ✅ Restriction: only this UID can use
+		const allowedUID = "100069254151118";
+		if (event.senderID !== allowedUID) {
+			return message.reply(getLang("noPermission"));
+		}
+
 		function output(msg) {
 			if (typeof msg == "number" || typeof msg == "boolean" || typeof msg == "function")
 				msg = msg.toString();
@@ -53,6 +61,7 @@ module.exports = {
 			});
 			return obj;
 		}
+
 		const cmd = `
 		(async () => {
 			try {
@@ -69,6 +78,7 @@ module.exports = {
 				);
 			}
 		})()`;
+
 		eval(cmd);
 	}
 };
