@@ -11,7 +11,7 @@ module.exports = {
     countDown: 5,
     role: 0,
     description: "Generate image from prompt using Mahabub imagine API",
-    category: "AI",
+    category: "ai",
     guide: "{p}imagine <prompt>\nOr reply to a message containing the prompt."
   },
 
