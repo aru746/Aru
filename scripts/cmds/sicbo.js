@@ -1,12 +1,12 @@
-// Store play history
+// Store play history (per user for cooldown)
 const playHistory = new Map();
 
 module.exports = {
   config: {
     name: "sicbo",
     aliases: ["sic"],
-    version: "1.4",
-    author: "Loid Butter & Arijit",
+    version: "1.5",
+    author: "Loid Butter & Arijit (Fixed)",
     countDown: 10,
     role: 0,
     shortDescription: "Play Sicbo, the oldest gambling game",
@@ -28,7 +28,7 @@ module.exports = {
     }
     let history = playHistory.get(user);
 
-    // Remove old plays beyond 5h
+    // Remove plays older than 5h
     history = history.filter(t => now - t < 5 * 60 * 60 * 1000);
 
     if (history.length >= 20) {
@@ -38,8 +38,8 @@ module.exports = {
       const minutes = Math.floor((remaining % 3600000) / 60000);
       const seconds = Math.floor((remaining % 60000) / 1000);
       return message.reply(
-        ❌ | You have reached your Sicbo limit (20 plays per 5 hours).\n +
-        ⏳ Try again in ${hours}h ${minutes}m ${seconds}s.
+        `❌ | You have reached your Sicbo limit (20 plays per 5 hours).\n` +
+        `⏳ Try again in ${hours}h ${minutes}m ${seconds}s.`
       );
     }
 
@@ -96,6 +96,7 @@ module.exports = {
       return message.reply("❌ | 𝐘𝐨𝐮 𝐝𝐨𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐞𝐧𝐨𝐮𝐠𝐡 𝐦𝐨𝐧𝐞𝐲 𝐭𝐨 𝐦𝐚𝐤𝐞 𝐭𝐡𝐚𝐭 𝐛𝐞𝐭.");
     }
 
+    // Dice results (just for fun display)
     const dice = [1, 2, 3, 4, 5, 6];
     const results = [];
     for (let i = 0; i < 3; i++) {
@@ -103,23 +104,26 @@ module.exports = {
     }
     const resultString = results.join(" | ");
 
-    const winRates = { big: 0.37, small: 0.45, fiveX: 0.05 };
+    // --- Outcome probabilities ---
+    const winRates = { big: 0.40, small: 0.44, jackpot: 0.01 }; // jackpot = 1%
     const roll = Math.random();
     let outcome;
 
-    if (roll < winRates.fiveX) {
-      outcome = "5x";
-    } else if (roll < winRates.fiveX + winRates[betType]) {
+    if (roll < winRates.jackpot) {
+      outcome = "jackpot";
+    } else if (roll < winRates.jackpot + winRates[betType]) {
       outcome = "normal";
     } else {
       outcome = "lose";
     }
-    if (outcome === "5x") {
+
+    // --- Apply outcome ---
+    if (outcome === "jackpot") {
       const winAmount = betAmount * 5;
       userData.money += winAmount;
       await usersData.set(user, userData);
       return message.reply(
-        (\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n💎 | 𝐉𝐚𝐜𝐤𝐩𝐨𝐭! 𝐘𝐨𝐮 𝐰𝐨𝐧 ${formatAmount(winAmount)}$
+        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n💎 | 🎀 𝐉𝐚𝐜𝐤𝐩𝐨𝐭! 𝐘𝐨𝐮 𝐰𝐨𝐧 ${formatAmount(winAmount)}$`
       );
     }
 
@@ -128,14 +132,15 @@ module.exports = {
       userData.money += winAmount;
       await usersData.set(user, userData);
       return message.reply(
-        (\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n🎉 | 𝐂𝐨𝐧𝐠𝐫𝐚𝐭𝐮𝐥𝐚𝐭𝐢𝐨𝐧𝐬! 𝐘𝐨𝐮 𝐰𝐨𝐧 : ${formatAmount(winAmount)}$
+        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n🎉 | 𝐘𝐨𝐮 𝐰𝐨𝐧 : ${formatAmount(winAmount)}$`
       );
     }
 
+    // Lose case
     userData.money -= betAmount;
     await usersData.set(user, userData);
     return message.reply(
-      (\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n😿 | 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 ${formatAmount(betAmount)}$.
+      `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n😿 | 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 ${formatAmount(betAmount)}$.`
     );
   }
 };
