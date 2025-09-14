@@ -44,9 +44,9 @@ module.exports = {
     if (!recipientID || isNaN(amount)) {
       return message.reply(
         "⚠️ Usage:\n" +
-        `- ${prefix}send -m @user <amount>\n` +
-        `- ${prefix}send -m <UID> <amount>\n` +
-        `- ${prefix}send -m <amount> (as a reply)`
+        `- ${prefix}s-m @user <amount>\n` +
+        `- ${prefix}s-m <UID> <amount>\n` +
+        `- ${prefix}s-m <amount> (as a reply)`
       );
     }
 
