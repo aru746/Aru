@@ -1,22 +1,32 @@
-const fs = require("fs-extra");
-const path = require("path");
+const mongoose = require("mongoose");
 
-const DATA_PATH = path.join(__dirname, "lottery_data.json");
-const STATUS_PATH = path.join(__dirname, "lottery_status.json");
+// --- SAFE MODELS --- //
+const Ticket = mongoose.models.LotteryTicket || mongoose.model("LotteryTicket", new mongoose.Schema({
+  userId: { type: String, required: true },
+  ticketNumber: { type: Number, required: true }
+}));
 
+const Status = mongoose.models.LotteryStatus || mongoose.model("LotteryStatus", new mongoose.Schema({
+  name: String,
+  userId: String,
+  ticketNumber: Number,
+  prize: Number
+}));
+
+// --- CONFIG --- //
 const MAX_TICKETS = 20;
 const MAX_PER_USER = 3;
-const TICKET_PRICE = 10_000_000;
+const TICKET_PRICE = 10_000_000; // 10M
 
 module.exports = {
   config: {
     name: "lottery",
-    version: "3.1.0",
+    version: "4.1.0",
     author: "Arijit",
     countDown: 5,
     role: 0,
     shortDescription: "Lottery game system",
-    longDescription: "Buy tickets, compete with other users, draw winner.",
+    longDescription: "Buy tickets, compete with others, draw winner (MongoDB).",
     category: "game",
     guide: {
       en: "{pn} buy 1-3 | draw | info | status"
@@ -24,12 +34,6 @@ module.exports = {
   },
 
   onStart: async function ({ message, event, usersData, args }) {
-    await fs.ensureFile(DATA_PATH);
-    await fs.ensureFile(STATUS_PATH);
-
-    let data = await fs.readJson(DATA_PATH).catch(() => ({ tickets: [] }));
-    let status = await fs.readJson(STATUS_PATH).catch(() => ({}));
-
     const userId = event.senderID;
     const userData = await usersData.get(userId);
     const userName = userData?.name || "Unknown";
@@ -39,23 +43,24 @@ module.exports = {
     if (subcmd === "buy") {
       const count = parseInt(args[1]);
       if (isNaN(count) || count < 1 || count > MAX_PER_USER) {
-        return message.reply(`❌ | You can only buy between 1 and ${MAX_PER_USER} tickets.`);
+        return message.reply(`❌ | 𝐘𝐨𝐮 𝐜𝐚𝐧 𝐨𝐧𝐥𝐲 𝐛𝐮𝐲 𝐛𝐞𝐭𝐰𝐞𝐞𝐧 1 𝐚𝐧𝐝 ${MAX_PER_USER} 𝐭𝐢𝐜𝐤𝐞𝐭𝐬.`);
       }
 
-      const userTickets = data.tickets.filter(t => t.userId === userId);
+      const userTickets = await Ticket.find({ userId });
       if (userTickets.length + count > MAX_PER_USER) {
-        return message.reply(`⚠ | You already have ${userTickets.length} ticket(s). Max allowed is ${MAX_PER_USER}.`);
+        return message.reply(`⚠ | 𝐘𝐨𝐮 𝐚𝐥𝐫𝐞𝐚𝐝𝐲 𝐡𝐚𝐯𝐞 ${userTickets.length} 𝐭𝐢𝐜𝐤𝐞𝐭(𝐬). 𝐌𝐚𝐱 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐢𝐬 ${MAX_PER_USER}.`);
       }
 
-      if (data.tickets.length + count > MAX_TICKETS) {
-        return message.reply(`🎫 | Only ${MAX_TICKETS - data.tickets.length} ticket(s) left.`);
+      const totalTickets = await Ticket.countDocuments();
+      if (totalTickets + count > MAX_TICKETS) {
+        return message.reply(`🎫 | 𝐎𝐧𝐥𝐲 ${MAX_TICKETS - totalTickets} 𝐭𝐢𝐜𝐤𝐞𝐭(𝐬) 𝐥𝐞𝐟𝐭.`);
       }
 
       const userBalance = userData?.money || 0;
       const cost = count * TICKET_PRICE;
       if (userBalance < cost) {
         return message.reply(
-          `💸 𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 $${(cost / 10_000_000)}𝐌 𝐭𝐨 𝐛𝐮𝐲 ${count} ticket(s).\n💼 𝐘𝐨𝐮 𝐡𝐚𝐯𝐞: $${(userBalance / 10_000_000)}𝐌`
+          `𝐁𝐚𝐛𝐲, 𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 $${cost / 1_000_000}𝐌 𝐭𝐨 𝐛𝐮𝐲 ${count} 𝐭𝐢𝐜𝐤𝐞𝐭(𝐬).\n💼 𝐘𝐨𝐮 𝐡𝐚𝐯𝐞: $${userBalance / 1_000_000}𝐌`
         );
       }
 
@@ -66,25 +71,25 @@ module.exports = {
 
       const newTickets = [];
       for (let i = 0; i < count; i++) {
-        const ticketNumber = data.tickets.length + 1;
-        data.tickets.push({ userId, ticketNumber });
+        const ticketNumber = (await Ticket.countDocuments()) + 1;
+        await Ticket.create({ userId, ticketNumber });
         newTickets.push(ticketNumber);
       }
 
-      await fs.writeJson(DATA_PATH, data);
-
       return message.reply(
-        `✅ 𝐘𝐨𝐮 𝐩𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝 ${count} ticket(s).\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭 𝐧𝐮𝐦𝐛𝐞𝐫𝐬: ${newTickets.join(", ")}\n💰 𝐓𝐨𝐭𝐚𝐥 𝐜𝐨𝐬𝐭: $${(cost / 10_000_000)}𝐌`
+        `✅ 𝐘𝐨𝐮 𝐛𝐨𝐮𝐠𝐡𝐭 ${count} ticket(s).\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭 𝐧𝐮𝐦𝐛𝐞𝐫𝐬: ${newTickets.join(", ")}\n💰 𝐂𝐨𝐬𝐭: $${cost / 1_000_000}𝐌`
       );
     }
 
     // DRAW
     else if (subcmd === "draw") {
-      if (data.tickets.length < MAX_TICKETS) {
-        return message.reply(`⏳ | Only ${data.tickets.length}/${MAX_TICKETS} tickets sold. Cannot draw yet.`);
+      const totalTickets = await Ticket.countDocuments();
+      if (totalTickets < MAX_TICKETS) {
+        return message.reply(`⏳ | 𝐎𝐧𝐥𝐲 ${totalTickets}/${MAX_TICKETS} 𝐭𝐢𝐜𝐤𝐞𝐭𝐬 𝐬𝐨𝐥𝐝. 𝐂𝐚𝐧𝐧𝐨𝐭 𝐝𝐫𝐚𝐰 𝐲𝐞𝐭.`);
       }
 
-      const winnerTicket = data.tickets[Math.floor(Math.random() * data.tickets.length)];
+      const tickets = await Ticket.find();
+      const winnerTicket = tickets[Math.floor(Math.random() * tickets.length)];
       const prize = TICKET_PRICE * MAX_TICKETS;
 
       const winnerData = await usersData.get(winnerTicket.userId);
@@ -95,38 +100,41 @@ module.exports = {
         money: winnerBalance + prize
       });
 
-      await fs.writeJson(STATUS_PATH, {
+      await Status.deleteMany({});
+      await Status.create({
         name: winnerData.name,
-        ticketNumber: winnerTicket.ticketNumber,
         userId: winnerTicket.userId,
+        ticketNumber: winnerTicket.ticketNumber,
         prize
       });
 
-      await fs.writeJson(DATA_PATH, { tickets: [] });
+      await Ticket.deleteMany({});
 
       return message.reply(
         `╭──────────────⭓\n` +
         `├ 🏅 𝐖𝐢𝐧𝐧𝐞𝐫 𝐚𝐧𝐧𝐨𝐮𝐧𝐜𝐞𝐝\n` +
         `├ 🎀 𝐖𝐢𝐧𝐧𝐞𝐫: ${winnerData.name}\n` +
         `├ 🎟 𝐓𝐢𝐜𝐤𝐞𝐭: #${winnerTicket.ticketNumber}\n` +
-        `├ 💰 𝐏𝐫𝐢𝐳𝐞: $${prize / 10_000_000}𝐌\n` +
+        `├ 💰 𝐏𝐫𝐢𝐳𝐞: $${prize / 1_000_000}𝐌\n` +
         `╰──────────────⭓\n\n• Prize has been deposited automatically.`
       );
     }
 
     // INFO
     else if (subcmd === "info") {
-      if (data.tickets.length === 0) {
-        return message.reply("📭 | No tickets have been bought yet.");
+      const totalTickets = await Ticket.countDocuments();
+      if (totalTickets === 0) {
+        return message.reply("📭 | 𝐍𝐨 𝐭𝐢𝐜𝐤𝐞𝐭𝐬 𝐡𝐚𝐯𝐞 𝐛𝐞𝐞𝐧 𝐛𝐨𝐮𝐠𝐡𝐭 𝐲𝐞𝐭.");
       }
 
+      const tickets = await Ticket.find();
       const usersMap = {};
-      for (const ticket of data.tickets) {
+      for (const ticket of tickets) {
         if (!usersMap[ticket.userId]) usersMap[ticket.userId] = [];
         usersMap[ticket.userId].push(ticket.ticketNumber);
       }
 
-      let infoText = `🎰 𝐋𝐨𝐭𝐭𝐞𝐫𝐲 𝐒𝐭𝐚𝐭𝐮𝐬:\n\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭𝐬 𝐬𝐨𝐥𝐝: ${data.tickets.length}/${MAX_TICKETS}\n💰 𝐏𝐫𝐢𝐳𝐞 𝐩𝐨𝐨𝐥: $${(data.tickets.length * TICKET_PRICE / 10_000_000)}𝐌\n\n`;
+      let infoText = `🎰 𝐋𝐨𝐭𝐭𝐞𝐫𝐲 𝐒𝐭𝐚𝐭𝐮𝐬:\n\n🎟 𝐓𝐢𝐜𝐤𝐞𝐭𝐬 𝐬𝐨𝐥𝐝: ${totalTickets}/${MAX_TICKETS}\n💰 𝐏𝐫𝐢𝐳𝐞 𝐩𝐨𝐨𝐥: $${(totalTickets * TICKET_PRICE) / 1_000_000}𝐌\n\n`;
 
       for (const [uid, ticketNums] of Object.entries(usersMap)) {
         const name = (await usersData.get(uid))?.name || uid;
@@ -138,23 +146,24 @@ module.exports = {
 
     // STATUS
     else if (subcmd === "status") {
-      if (!status.name) {
+      const lastStatus = await Status.findOne();
+      if (!lastStatus) {
         return message.reply("ℹ | No previous winner yet.");
       }
 
       return message.reply(
-        `🏆 𝐋𝐚𝐬𝐭 𝐖𝐢𝐧𝐧𝐞𝐫:\n👤 ${status.name}\n🎫 Ticket: #${status.ticketNumber}\n💰 Prize: $${status.prize / 10_000_000}𝐌`
+        `🏆 𝐋𝐚𝐬𝐭 𝐖𝐢𝐧𝐧𝐞𝐫:\n👤 ${lastStatus.name}\n🎫 Ticket: #${lastStatus.ticketNumber}\n💰 Prize: $${lastStatus.prize / 1_000_000}𝐌`
       );
     }
 
     // HELP
     else {
       return message.reply(
-        `🎲 | Lottery Command Usage:\n` +
-        `• Buy: lottery buy [1-3]\n` +
-        `• Info: lottery info\n` +
-        `• Draw: lottery draw\n` +
-        `• Status: lottery status`
+        `🎲 | 𝐋𝐨𝐭𝐭𝐞𝐫𝐲 𝐂𝐨𝐦𝐦𝐚𝐧𝐝 𝐔𝐬𝐚𝐠𝐞:\n` +
+        `• 𝐁𝐮𝐲: 𝐥𝐨𝐭𝐭𝐞𝐫𝐲 𝐛𝐮𝐲 [1-3]\n` +
+        `• 𝐈𝐧𝐟𝐨: 𝐥𝐨𝐭𝐭𝐞𝐫𝐲 𝐢𝐧𝐟𝐨\n` +
+        `• 𝐃𝐫𝐚𝐰: 𝐥𝐨𝐭𝐭𝐞𝐫𝐲 𝐝𝐫𝐚𝐰\n` +
+        `• 𝐒𝐭𝐚𝐭𝐮𝐬: 𝐥𝐨𝐭𝐭𝐞𝐫𝐲 𝐬𝐭𝐚𝐭𝐮𝐬`
       );
     }
   }
