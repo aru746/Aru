@@ -6,7 +6,7 @@ module.exports = {
     name: "sicbo",
     aliases: ["sic"],
     version: "1.5",
-    author: "Loid Butter & Arijit (Fixed)",
+    author: "Loid Butter + Arijit",
     countDown: 10,
     role: 0,
     shortDescription: "Play Sicbo, the oldest gambling game",
@@ -132,7 +132,7 @@ module.exports = {
       userData.money += winAmount;
       await usersData.set(user, userData);
       return message.reply(
-        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n🎉 | 𝐘𝐨𝐮 𝐰𝐨𝐧 : ${formatAmount(winAmount)}$`
+        `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n🎉 | 𝐂𝐨𝐧𝐠𝐫𝐚𝐭𝐮𝐥𝐚𝐭𝐢𝐨𝐧𝐬 𝐘𝐨𝐮 𝐰𝐨𝐧 : ${formatAmount(winAmount)}$`
       );
     }
 
@@ -140,7 +140,7 @@ module.exports = {
     userData.money -= betAmount;
     await usersData.set(user, userData);
     return message.reply(
-      `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n😿 | 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 ${formatAmount(betAmount)}$.`
+      `(\\_/)\n( •_•)\n// >[ ${resultString} ]\n\n😿 | 𝐁𝐚𝐝 𝐥𝐮𝐜𝐤 𝐘𝐨𝐮 𝐥𝐨𝐬𝐭 ${formatAmount(betAmount)}$.`
     );
   }
 };
