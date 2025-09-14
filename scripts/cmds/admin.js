@@ -4,7 +4,7 @@ const { writeFileSync } = require("fs-extra");
 module.exports = {
   config: {
     name: "admin",
-    version: "1.7",
+    version: "1.8",
     author: "Arijit",
     countDown: 5,
     role: 2,
@@ -29,7 +29,7 @@ module.exports = {
     }
   },
 
-  onStart: async function ({ message, args, usersData, event, getLang }) {
+  onStart: async function ({ message, args, usersData, event, getLang, role }) {
     const sendUserTag = async (uid) => {
       if (!uid || uid === "0") return null;
       let name = await usersData.getName(uid);
@@ -41,7 +41,7 @@ module.exports = {
 
     const action = (args[0] || "").toLowerCase();
 
-    // 🔹 Allow everyone to run "list"
+    // ✅ "list" সবাই ব্যবহার করতে পারবে
     if (action === "list" || action === "-l") {
       if (!config.adminBot.length)
         return message.reply(getLang("listAdmin", "No admins found"));
@@ -54,7 +54,11 @@ module.exports = {
       return message.reply(getLang("listAdmin", adminList));
     }
 
-    // 🔹 Other actions (add/remove) stay admin-only
+    // 🚫 add/remove => শুধু role >= 2 (bot-admin) ব্যবহার করতে পারবে
+    if (role < 2) {
+      return message.reply("⛔ You don't have permission to use this command.");
+    }
+
     switch (action) {
       case "add":
       case "-a": {
@@ -64,8 +68,8 @@ module.exports = {
         let uids = Object.keys(event.mentions).length
           ? Object.keys(event.mentions)
           : event.messageReply
-          ? [event.messageReply.senderID]
-          : args.slice(1).filter(arg => !isNaN(arg));
+            ? [event.messageReply.senderID]
+            : args.slice(1).filter(arg => !isNaN(arg));
 
         const notAdminIds = uids.filter(uid => !config.adminBot.includes(uid));
         const alreadyAdminIds = uids.filter(uid => config.adminBot.includes(uid));
@@ -95,8 +99,8 @@ module.exports = {
         let uids = Object.keys(event.mentions).length
           ? Object.keys(event.mentions)
           : event.messageReply
-          ? [event.messageReply.senderID]
-          : args.slice(1).filter(arg => !isNaN(arg));
+            ? [event.messageReply.senderID]
+            : args.slice(1).filter(arg => !isNaN(arg));
 
         const adminIds = uids.filter(uid => config.adminBot.includes(uid));
         const notAdminIds = uids.filter(uid => !config.adminBot.includes(uid));
