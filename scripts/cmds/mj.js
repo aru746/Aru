@@ -19,7 +19,7 @@ module.exports = {
     }
 
     try {
- api.sendMessage("🧩 Calling the Ariyan API...", event.threadID, event.messageID);
+ api.sendMessage("🧩 Calling the midjourney API...", event.threadID, event.messageID);
       const res = await axios.get(`https://rest-nyx-apis-production.up.railway.app/api/mj?prompt=${encodeURIComponent(prompt)}`);
       const { discordCdn, imagesUrls } = res.data;
 
