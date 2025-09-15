@@ -5,6 +5,7 @@ module.exports.config = {
   version: "2.0",
   role: 0,
   author: "Dipto",
+  aliases: ["fx","f"],
   description: "Flux Image Generator",
   category: "image",
   premium: true,
