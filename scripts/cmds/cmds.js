@@ -6,11 +6,11 @@ const ITEMS_PER_PAGE = 10;
 module.exports.config = {
   name: "cmdstore",
   aliases: ["cmds", "cs"],
-  author: "MahMUD",
-  role: 0,
+  author: "Arijit",
+  role: 2, // 🔒 Admin only
   version: "1.7",
   description: {
-    en: "Commands Store of MahMUD",
+    en: "Commands Store of Arijit",
   },
   countDown: 3,
   category: "general",
@@ -56,10 +56,10 @@ module.exports.onStart = async function ({ api, event, args }) {
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const cmdsToShow = finalArray.slice(startIndex, endIndex);
 
-    let msg = `╭─‣ 𝐇𝐢𝐧𝐚𝐭𝐚 𝐒𝐭𝐨𝐫𝐞 🎀\n├‣ 𝐀𝐝𝐦𝐢𝐧: 𝐌𝐚𝐡𝐌𝐔𝐃\n├‣ 𝐓𝐨𝐭𝐚𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬: ${finalArray.length}\n╰────────────◊\n`;
+    let msg = `╭─➢ ⋆˚🦋𝐀𝐥𝐲𝐚 𝐂𝐡𝐚𝐧🎀🍓⋆˚\n├➢ 𝐀𝐝𝐦𝐢𝐧: 𝐀 𝐑 𝐈 𝐉 𝐈 𝐓\n├➢ 𝐓𝐨𝐭𝐚𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬: ${finalArray.length}\n╰────────────⭓\n`;
 
     cmdsToShow.forEach((cmd, index) => {
-      msg += `╭─‣ ${startIndex + index + 1}: ${cmd.cmd}\n├‣ Author: ${cmd.author}\n├‣ Update: ${cmd.update}\n╰────────────◊\n`;
+      msg += `╭─➢ ${startIndex + index + 1}: ${cmd.cmd}\n├➢ Author: ${cmd.author}\n├➢ Update: ${cmd.update}\n╰────────────⭓\n`;
     });
 
     msg += `\n📄 | 𝐏𝐚𝐠𝐞 [${page}-${totalPages}]\nℹ | 𝐓𝐲𝐩𝐞 !cmds ${page + 1} - 𝐭𝐨 𝐬𝐞𝐞 𝐧𝐞𝐱𝐭 𝐩𝐚𝐠𝐞.`;
@@ -115,7 +115,7 @@ module.exports.onReply = async function ({ api, event, Reply }) {
       );
     }
     api.unsendMessage(Reply.messageID);
-    const msg = `╭────────◊\n├‣ Command URL: ${selectedCmdUrl}\n╰─────────────◊`;
+    const msg = `╭────────⭓\n├‣ Command URL: ${selectedCmdUrl}\n╰─────────────⭓`;
     api.sendMessage(msg, event.threadID, event.messageID);
   } catch (error) {
     api.sendMessage(
