@@ -3,7 +3,7 @@ src="https://i.imgur.com/1SwrtZ1.jpeg" alt="banner">
 
 <h1 align="center">
   <img src="https://i.imgur.com/EPgCOnR.jpeg" width="22px" alt="icon">
-  𝐀𝐥𝐲𝐚 𝐂𝐡𝐚𝐧 🐱🎀 - 𝐌𝐞𝐬𝐬𝐞𝐧𝐠𝐞𝐫 𝐁𝐨𝐭
+  ⋆˚🦋𝐀𝐥𝐲𝐚 𝐂𝐡𝐚𝐧🎀🍓⋆˚- 𝐌𝐞𝐬𝐬𝐞𝐧𝐠𝐞𝐫 𝐁𝐨𝐭
 </h1>
 
 <p align="center">
@@ -40,7 +40,7 @@ If you find any issues, please report them!
 				<br>
 	𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤: <a href="https://fb.com/arijit016" style="color: black;">𝐀 𝐑 𝐈 𝐉 𝐈 𝐓</a></h3></div>
 
-<img align="center" src="https://i.imgur.com/pVS6nuV.jpeg"/>
+<img align="center" src="https://files.catbox.moe/savto6.jpeg"/>
 
 
 🔹𝐀 𝐑 𝐈 𝐉 𝐈 𝐓⚡
