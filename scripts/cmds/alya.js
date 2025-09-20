@@ -23,6 +23,7 @@ module.exports = {
         "https://files.catbox.moe/ymu0i8.mp4",
         "https://files.catbox.moe/uporic.mp4",
         "https://files.catbox.moe/xa9pve.mp4",
+        "https://files.catbox.moe/zh2y51.mp4",
         "https://files.catbox.moe/rba8lv.mp4",
         "https://files.catbox.moe/sh7mhs.mp4"
       ];
@@ -30,7 +31,7 @@ module.exports = {
       const link = videos[Math.floor(Math.random() * videos.length)];
 
       message.reply({
-        body: "🎀 | | 𝐇𝐞𝐫𝐞'𝐬 𝐲𝐨𝐮𝐫 𝐫𝐚𝐧𝐝𝐨𝐦 𝐀𝐥𝐲𝐚 𝐂𝐡𝐚𝐧 𝐯𝐢𝐝𝐞𝐨",
+        body: "🎀 | 𝐇𝐞𝐫𝐞'𝐬 𝐲𝐨𝐮𝐫 𝐫𝐚𝐧𝐝𝐨𝐦 𝐀𝐥𝐲𝐚 𝐂𝐡𝐚𝐧 𝐯𝐢𝐝𝐞𝐨",
         attachment: await global.utils.getStreamFromURL(link)
       });
     } catch (err) {
