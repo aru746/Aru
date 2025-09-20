@@ -28,7 +28,7 @@ module.exports = {
 
     // 🚫 Owner protection
     if (targetID === "100069254151118") {
-      return message.reply("🚫 You deserve this, not my owner! 😙");
+      return message.reply("🚫 You deserve this, not my owner!😙");
     }
 
     const baseFolder = path.join(__dirname, "NAFIJ");
